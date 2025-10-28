@@ -1,0 +1,39 @@
+# OpenAI Configuration
+openai:
+  model: "gpt-4-vision-preview"
+  max_tokens: 4096
+  temperature: 0.1
+  timeout_seconds: 30
+
+# Processing Configuration  
+processing:
+  supported_formats: [".jpg", ".jpeg", ".png"]
+  max_image_size_mb: 20
+  retry_attempts: 3
+  concurrent_limit: 3
+
+# File Storage Configuration
+file_storage:
+  uploads_dir: "uploads"
+  outputs_dir: "outputs"
+  max_file_size: 20971520  # 20MB
+  allowed_extensions: [".png", ".jpg", ".jpeg", ".gif", ".bmp"]
+  cleanup_after_days: 7
+
+# Output Configuration
+output:
+  master_filename_template: "results_master_{mode}.csv"
+  breakdown_filename_template: "{project_number}_{presenter}.json"
+  log_filename: "run_log.jsonl"
+  excel_support: true
+
+# Evaluation Configuration
+evaluation:
+  default_mode: "fifteen"
+  modes:
+    fifteen:
+      questions: ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q11", "Q12", "Q13", "Q15"]
+      max_score: 100
+    seven:
+      questions: ["Q6", "Q7", "Q8", "Q9", "Q11", "Q12", "Q13"]
+      max_score: 100
