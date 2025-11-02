@@ -12,13 +12,22 @@ class AsyncOpenAIVisionClient:
     """Async OpenAI GPT-4 Vision client for poster analysis"""
     
     def __init__(self):
+        # Get API key from environment - never hardcode API keys in source code
         api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key or api_key == "your_openai_api_key_here":
-            # For development/testing - will fail gracefully when called
-            api_key = "sk-test-key-placeholder"
+        
+        if not api_key:
+            raise ValueError(
+                "OpenAI API key not found. Please set OPENAI_API_KEY environment variable. "
+                "Copy .env.example to .env and add your API key."
+            )
+        
+        if api_key == "your_openai_api_key_here":
+            raise ValueError(
+                "Please replace 'your_openai_api_key_here' with your actual OpenAI API key in the .env file."
+            )
         
         self.client = AsyncOpenAI(api_key=api_key)
-        self.model = os.getenv("OPENAI_MODEL", "gpt-4-vision-preview")
+        self.model = os.getenv("OPENAI_MODEL", "gpt-4o")
         self.max_tokens = int(os.getenv("MAX_TOKENS", "4096"))
         self.temperature = float(os.getenv("TEMPERATURE", "0.1"))
         self.timeout = int(os.getenv("TIMEOUT_SECONDS", "30"))
@@ -57,12 +66,25 @@ class AsyncOpenAIVisionClient:
                 timeout=self.timeout
             )
             
+            # Debug logging
+            content = response.choices[0].message.content
+            print(f"OpenAI API response status: {response.model}")
+            print(f"OpenAI API response content length: {len(content) if content else 0}")
+            print(f"OpenAI API response content preview: {content[:100] if content else 'None'}...")
+            
             return {
-                "content": response.choices[0].message.content,
+                "content": content,
                 "usage": response.usage.dict() if response.usage else None
             }
             
         except asyncio.TimeoutError:
             raise Exception(f"OpenAI API timeout after {self.timeout} seconds")
         except Exception as e:
-            raise Exception(f"OpenAI API error: {str(e)}")
+            # Handle authentication and other API errors more gracefully
+            error_msg = str(e)
+            if "api_key" in error_msg.lower() or "authentication" in error_msg.lower():
+                raise Exception("OpenAI API authentication failed. Please check your API key.")
+            elif "rate limit" in error_msg.lower():
+                raise Exception("OpenAI API rate limit exceeded. Please try again later.")
+            else:
+                raise Exception(f"OpenAI API error: {error_msg}")

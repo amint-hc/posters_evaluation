@@ -1,17 +1,18 @@
 import os
 import shutil
 from pathlib import Path
-from typing import List, Optional
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, Depends
+from typing import List
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from .evaluator import evaluator
+from .evaluator import get_evaluator
 from .processors.output_generator import AsyncOutputGenerator
 from .models.poster_data import (
-    EvaluationRequest, BatchEvaluationRequest, EvaluationResponse,
-    BatchUploadResponse, EvaluationJob, EvaluationMode, ProcessingStatus
+    EvaluationResponse,
+    BatchUploadResponse, 
+    EvaluationJob, EvaluationMode, ProcessingStatus
 )
 
 # Load environment variables
@@ -75,19 +76,26 @@ async def process_evaluation_job(job_id: str, mode: EvaluationMode):
         ]
         
         if not image_files:
-            evaluator.update_job_status(job_id, ProcessingStatus.FAILED)
+            get_evaluator().update_job_status(job_id, ProcessingStatus.FAILED)
             return
         
         # Process evaluations
-        results = await evaluator.evaluate_batch(job_id, image_files, mode)
+        results = await get_evaluator().evaluate_batch(job_id, image_files, mode)
+        
+        # Get the job to access processing logs
+        job = get_evaluator().get_job(job_id)
+
+        if not job:
+            print(f"Job {job_id} not found during processing.")
+            return
         
         # Generate output files
         output_gen = AsyncOutputGenerator(OUTPUT_DIR / job_id, mode.value)
-        await output_gen.generate_all_outputs(results, [])
+        await output_gen.generate_all_outputs(results, job.processing_logs)
         
     except Exception as e:
         print(f"Error processing job {job_id}: {str(e)}")
-        evaluator.update_job_status(job_id, ProcessingStatus.FAILED)
+        get_evaluator().update_job_status(job_id, ProcessingStatus.FAILED)
 
 @app.get("/", tags=["Health"])
 async def root():
@@ -109,7 +117,7 @@ async def upload_single_poster(
         )
     
     # Create job
-    job_id = evaluator.create_job(mode, 1)
+    job_id = get_evaluator().create_job(mode, 1)
     
     try:
         # Save file
@@ -136,9 +144,9 @@ async def upload_batch_posters(
 ):
     """Upload and evaluate multiple posters"""
     
-    if len(files) > 50:  # Reasonable limit
-        raise HTTPException(status_code=400, detail="Too many files. Maximum 50 files per batch.")
-    
+    if len(files) > 250:  # Reasonable limit
+        raise HTTPException(status_code=400, detail="Too many files. Maximum 250 files per batch.")
+
     # Validate files
     valid_files = []
     skipped_files = []
@@ -153,7 +161,7 @@ async def upload_batch_posters(
         raise HTTPException(status_code=400, detail="No valid image files found in upload.")
     
     # Create job
-    job_id = evaluator.create_job(mode, len(valid_files))
+    job_id = get_evaluator().create_job(mode, len(valid_files))
     
     try:
         # Save files
@@ -176,7 +184,7 @@ async def upload_batch_posters(
 @app.get("/jobs/{job_id}", response_model=EvaluationJob, tags=["Jobs"])
 async def get_job_status(job_id: str):
     """Get job status and progress"""
-    job = evaluator.get_job(job_id)
+    job = get_evaluator().get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     
@@ -185,7 +193,7 @@ async def get_job_status(job_id: str):
 @app.get("/jobs/{job_id}/results", tags=["Results"])
 async def get_job_results(job_id: str):
     """Get job evaluation results"""
-    job = evaluator.get_job(job_id)
+    job = get_evaluator().get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     
@@ -211,7 +219,7 @@ async def get_job_results(job_id: str):
 @app.get("/jobs/{job_id}/download/master", tags=["Downloads"])
 async def download_master_results(job_id: str):
     """Download master CSV results file"""
-    job = evaluator.get_job(job_id)
+    job = get_evaluator().get_job(job_id)
     if not job or job.status != ProcessingStatus.COMPLETED:
         raise HTTPException(status_code=404, detail="Results not available")
     
@@ -228,7 +236,7 @@ async def download_master_results(job_id: str):
 @app.get("/jobs/{job_id}/download/log", tags=["Downloads"])
 async def download_run_log(job_id: str):
     """Download run log file"""
-    job = evaluator.get_job(job_id)
+    job = get_evaluator().get_job(job_id)
     if not job or job.status != ProcessingStatus.COMPLETED:
         raise HTTPException(status_code=404, detail="Results not available")
     
@@ -245,7 +253,7 @@ async def download_run_log(job_id: str):
 @app.get("/jobs/{job_id}/download/breakdown/{filename}", tags=["Downloads"])
 async def download_breakdown_file(job_id: str, filename: str):
     """Download individual poster breakdown JSON file"""
-    job = evaluator.get_job(job_id)
+    job = get_evaluator().get_job(job_id)
     if not job or job.status != ProcessingStatus.COMPLETED:
         raise HTTPException(status_code=404, detail="Results not available")
     
@@ -262,7 +270,7 @@ async def download_breakdown_file(job_id: str, filename: str):
 @app.delete("/jobs/{job_id}", tags=["Jobs"])
 async def delete_job(job_id: str):
     """Delete job and associated files"""
-    job = evaluator.get_job(job_id)
+    job = get_evaluator().get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     
@@ -278,7 +286,7 @@ async def delete_job(job_id: str):
             shutil.rmtree(output_dir)
         
         # Remove job from memory
-        del evaluator.jobs[job_id]
+        del get_evaluator().jobs[job_id]
         
         return {"message": "Job deleted successfully"}
         
@@ -291,18 +299,25 @@ async def health_check():
     try:
         # Check OpenAI API key
         api_key = os.getenv("OPENAI_API_KEY")
-        api_key_status = "configured" if api_key else "missing"
+        api_key_status = "configured" if api_key and api_key != "your_openai_api_key_here" else "missing"
         
         # Check directories
         upload_dir_status = "accessible" if UPLOAD_DIR.exists() else "missing"
         output_dir_status = "accessible" if OUTPUT_DIR.exists() else "missing"
+        
+        # Try to get active jobs count, but don't fail if evaluator can't be created
+        try:
+            active_jobs = len(get_evaluator().jobs)
+        except ValueError:
+            # API key not configured properly
+            active_jobs = 0
         
         return {
             "status": "healthy",
             "api_key": api_key_status,
             "upload_directory": upload_dir_status,
             "output_directory": output_dir_status,
-            "active_jobs": len(evaluator.jobs)
+            "active_jobs": active_jobs
         }
         
     except Exception as e:

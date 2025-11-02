@@ -2,12 +2,16 @@ import pytest
 import asyncio
 import sys
 import os
+from unittest.mock import Mock, MagicMock
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
-from src.main import app
 
 # Set environment variables to help with async testing
 os.environ["PYTHONPATH"] = os.path.dirname(os.path.dirname(__file__))
+# Set a mock API key for testing
+os.environ["OPENAI_API_KEY"] = "test-api-key-for-testing"
+
+from src.main import app
 
 # Fix for Windows + Python 3.8 event loop issues
 if sys.platform == "win32" and sys.version_info < (3, 9):

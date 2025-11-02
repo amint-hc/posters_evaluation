@@ -3,7 +3,7 @@ import time
 import uuid
 import asyncio
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 from .models.openai_client import AsyncOpenAIVisionClient
 from .models.prompts import POSTER_EVALUATION_PROMPT, SEVEN_QUESTION_PROMPT
@@ -16,7 +16,13 @@ class AsyncPosterEvaluator:
     """Async poster evaluation engine for FastAPI"""
     
     def __init__(self):
-        self.client = AsyncOpenAIVisionClient()
+        try:
+            self.client = AsyncOpenAIVisionClient()
+        except ValueError as e:
+            print(f"Configuration Error: {str(e)}")
+            print("Please check your .env file and ensure OPENAI_API_KEY is set.")
+            raise
+        
         self.jobs: Dict[str, EvaluationJob] = {}
     
     def create_job(self, mode: EvaluationMode, total_files: int) -> str:
@@ -47,9 +53,16 @@ class AsyncPosterEvaluator:
             self.jobs[job_id].status = status
             self.jobs[job_id].updated_at = datetime.utcnow()
     
-    async def evaluate_poster(self, image_path: Path, mode: EvaluationMode) -> Optional[PosterEvaluation]:
-        """Evaluate a single poster image"""
+    async def evaluate_poster(self, image_path: Path, mode: EvaluationMode) -> Tuple[Optional[PosterEvaluation], ProcessingLog]:
+        """Evaluate a single poster image and return both evaluation and processing log"""
         start_time = time.time()
+        processing_log = ProcessingLog(
+            file=image_path.name,
+            status="ok",
+            grade=None,
+            duration_ms=None,
+            error=None
+        )
         
         try:
             # Select appropriate prompt
@@ -59,8 +72,33 @@ class AsyncPosterEvaluator:
             # Get AI analysis
             response = await self.client.analyze_poster(image_path, prompt)
             
+            # Check if response content exists and is not empty
+            if not response or "content" not in response:
+                print(f"Error: No content in response for {image_path.name}")
+                processing_log.status = "failed"
+                processing_log.error = "No content in response"
+                return None, processing_log
+
+            content = response["content"]
+            if not content or content.strip() == "":
+                print(f"Error: Empty content in response for {image_path.name}")
+                processing_log.status = "failed"
+                processing_log.error = "Empty content in response"
+                return None, processing_log
+
+            print(f"Raw response content for {image_path.name}: {content[:200]}...")
+            
+            # Clean the content - extract JSON from markdown code blocks if present
+            cleaned_content = self._extract_json_from_content(content)
+            
             # Parse JSON response
-            analysis_data = json.loads(response["content"])
+            try:
+                analysis_data = json.loads(cleaned_content)
+            except json.JSONDecodeError as json_err:
+                print(f"JSON parsing error for {image_path.name}: {str(json_err)}")
+                processing_log.status = "failed"
+                processing_log.error = f"JSON parsing error: {str(json_err)}"
+                return None, processing_log
             
             # Create evaluation object
             evaluation = self._create_evaluation(image_path, analysis_data)
@@ -68,11 +106,43 @@ class AsyncPosterEvaluator:
             # Calculate final grade
             evaluation.final_grade = evaluation.calculate_final_grade()
             
-            return evaluation
+            # Update processing log with success info
+            processing_log.grade = evaluation.final_grade
+            processing_log.duration_ms = int((time.time() - start_time) * 1000)
+            
+            return evaluation, processing_log
             
         except Exception as e:
             print(f"Error evaluating {image_path.name}: {str(e)}")
-            return None
+            # Update processing log with error info
+            processing_log.status = "failed"
+            processing_log.error = "timeout" if "timeout" in str(e).lower() else str(e)
+            return None, processing_log
+    
+    def _extract_json_from_content(self, content: str) -> str:
+        """Extract JSON from content that may be wrapped in markdown code blocks"""
+        import re
+        
+        # First, try to find JSON within markdown code blocks
+        json_pattern = r'```(?:json)?\s*(\{.*?\})\s*```'
+        match = re.search(json_pattern, content, re.DOTALL)
+        
+        if match:
+            return match.group(1).strip()
+        
+        # If no markdown blocks found, try basic cleaning
+        cleaned = content.strip()
+        
+        # Remove any leading/trailing markdown markers
+        if cleaned.startswith('```json'):
+            cleaned = cleaned[7:]
+        elif cleaned.startswith('```'):
+            cleaned = cleaned[3:]
+        
+        if cleaned.endswith('```'):
+            cleaned = cleaned[:-3]
+        
+        return cleaned.strip()
     
     def _create_evaluation(self, image_path: Path, data: Dict) -> PosterEvaluation:
         """Create PosterEvaluation from API response"""
@@ -98,18 +168,19 @@ class AsyncPosterEvaluator:
         
         async def process_single_poster(image_path: Path):
             async with semaphore:
-                evaluation = await self.evaluate_poster(image_path, mode)
+                evaluation, processing_log = await self.evaluate_poster(image_path, mode)
                 
                 if evaluation:
                     results.append(evaluation)
                 else:
                     errors.append(f"Failed to process {image_path.name}")
                 
-                # Update job progress
+                # Update job progress and logs
                 job = self.get_job(job_id)
                 if job:
                     job.processed_files += 1
                     job.updated_at = datetime.utcnow()
+                    job.processing_logs.append(processing_log)
         
         # Execute all evaluations
         tasks = [process_single_poster(path) for path in image_paths]
@@ -123,10 +194,37 @@ class AsyncPosterEvaluator:
         if job:
             job.results = results
             job.errors = errors
-            job.status = ProcessingStatus.COMPLETED if not errors else ProcessingStatus.FAILED
+            
+            # Set job status based on results
+            if not results and errors:
+                # No successful results, only errors
+                job.status = ProcessingStatus.FAILED
+            elif results and not errors:
+                # All successful, no errors
+                job.status = ProcessingStatus.COMPLETED
+            elif results and errors:
+                # Mixed results - some success, some errors
+                job.status = ProcessingStatus.COMPLETED  # Consider partially successful as completed
+                print(f"Job {job_id} completed with {len(results)} successful and {len(errors)} failed evaluations")
+            else:
+                # No results and no errors (shouldn't happen)
+                job.status = ProcessingStatus.FAILED
+                
             job.updated_at = datetime.utcnow()
         
         return results
 
-# Global evaluator instance
-evaluator = AsyncPosterEvaluator()
+# Global evaluator instance (lazy initialization)
+_evaluator_instance = None
+
+def get_evaluator() -> AsyncPosterEvaluator:
+    """Get or create the global evaluator instance"""
+    global _evaluator_instance
+    if _evaluator_instance is None:
+        _evaluator_instance = AsyncPosterEvaluator()
+    return _evaluator_instance
+
+# For backward compatibility
+def evaluator() -> AsyncPosterEvaluator:
+    """Get the global evaluator instance"""
+    return get_evaluator()

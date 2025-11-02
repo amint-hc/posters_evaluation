@@ -35,8 +35,8 @@ class AsyncOutputGenerator:
         
         # Use asyncio to write file
         csv_content = df.to_csv(index=False)
-        async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
-            await f.write(csv_content)
+        async with aiofiles.open(filepath, 'w', encoding='utf-8', newline='') as f:
+            await f.write(csv_content.strip())
         
         print(f"Master results saved to: {filepath}")
         return filepath

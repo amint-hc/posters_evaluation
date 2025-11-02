@@ -1,3 +1,4 @@
+import json
 from pydantic import BaseModel, Field
 from typing import Optional, Literal, Union, List
 from pathlib import Path
@@ -25,9 +26,6 @@ class QuestionResponse(BaseModel):
 class PosterEvaluation(BaseModel):
     """Complete poster evaluation result"""
     poster_file: str
-    project_number: Optional[str] = ""
-    advisor_name: Optional[str] = ""
-    presenter: Optional[str] = ""
     
     # Question responses (Q1-Q15)
     Q1: str = ""  # Project number
@@ -75,6 +73,22 @@ class ProcessingLog(BaseModel):
     duration_ms: Optional[int] = None
     error: Optional[str] = None
 
+    def json(self, **kwargs) -> str:
+        """Custom JSON serialization to match required format"""
+        if self.status == "ok":
+            return json.dumps({
+                "file": self.file,
+                "status": "ok",
+                "grade": self.grade,
+                "duration_ms": self.duration_ms
+            })
+        else:
+            return json.dumps({
+                "file": self.file,
+                "status": "failed",
+                "error": self.error or "unknown error"
+            })
+
 # API Request/Response Models
 class EvaluationRequest(BaseModel):
     """Request model for poster evaluation"""
@@ -97,6 +111,7 @@ class EvaluationJob(BaseModel):
     processed_files: int
     results: List[PosterEvaluation] = []
     errors: List[str] = []
+    processing_logs: List[ProcessingLog] = []
 
 class EvaluationResponse(BaseModel):
     """Response model for evaluation results"""
