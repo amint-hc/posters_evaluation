@@ -1,8 +1,7 @@
+import os
+import sys
 import pytest
 import asyncio
-import sys
-import os
-from unittest.mock import Mock, MagicMock
 from httpx import AsyncClient
 from fastapi.testclient import TestClient
 
@@ -62,22 +61,5 @@ async def async_client():
 def sample_image_data():
     """Return sample image data for testing."""
     # Create a minimal PNG image data (1x1 pixel)
-    import base64
     png_data = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\tpHYs\x00\x00\x0b\x13\x00\x00\x0b\x13\x01\x00\x9a\x9c\x18\x00\x00\x00\x12IDATx\x9cc```bPPP\x00\x02\xc4\x00\x01\x85\x1f\xa2\x11\x00\x00\x00\x00IEND\xaeB`\x82'
     return png_data
-
-@pytest.fixture
-def sample_config():
-    """Return sample configuration for testing."""
-    return {
-        "openai": {
-            "api_key": "test-key",
-            "model": "gpt-4-vision-preview",
-            "max_tokens": 4096,
-            "temperature": 0.1,
-            "timeout_seconds": 30
-        },
-        "processing": {
-            "concurrent_requests": 2
-        }
-    }

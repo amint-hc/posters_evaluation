@@ -24,9 +24,7 @@ def validate_file_structure():
         "src/processors/__init__.py",
         "src/processors/output_generator.py",
         "src/utils/__init__.py",
-        "src/utils/config.py",
         "src/utils/validators.py",
-        "config/config.yaml",
         "requirements.txt",
         "Dockerfile",
         "docker-compose.yml",
@@ -59,7 +57,6 @@ def validate_python_syntax():
         "src/models/openai_client.py",
         "src/models/prompts.py",
         "src/processors/output_generator.py",
-        "src/utils/config.py",
         "src/utils/validators.py"
     ]
     
@@ -89,33 +86,6 @@ def validate_python_syntax():
     else:
         print("\n✅ All Python files have valid syntax")
         return True
-
-def validate_config_files():
-    """Validate configuration files."""
-    print("\n🔍 Validating configuration files...")
-    
-    try:
-        # Check YAML config
-        import yaml
-        with open('config/config.yaml', 'r') as f:
-            config = yaml.safe_load(f)
-        print("  ✅ config.yaml is valid YAML")
-        
-        # Check required config sections
-        required_sections = ['openai', 'processing', 'file_storage']
-        for section in required_sections:
-            if section not in config:
-                print(f"  ❌ Missing config section: {section}")
-                return False
-        print("  ✅ All required config sections present")
-        
-    except ImportError:
-        print("  ⚠️  PyYAML not installed, skipping YAML validation")
-    except Exception as e:
-        print(f"  ❌ Config validation error: {e}")
-        return False
-    
-    return True
 
 def validate_api_structure():
     """Validate FastAPI application structure."""
@@ -166,7 +136,6 @@ def main():
     # Run all validations
     all_valid &= validate_file_structure()
     all_valid &= validate_python_syntax()
-    all_valid &= validate_config_files()
     all_valid &= validate_api_structure()
     
     print("\n" + "=" * 50)

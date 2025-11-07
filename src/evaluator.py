@@ -178,35 +178,36 @@ class AsyncPosterEvaluator:
                     job.updated_at = datetime.utcnow()
                     job.processing_logs.append(processing_log)
         
-        # Execute all evaluations
+        # Handle empty batch case first
+        if not image_paths:
+            if job_id in self.jobs:
+                self.jobs[job_id].status = ProcessingStatus.COMPLETED
+                self.jobs[job_id].updated_at = datetime.utcnow()
+            return []
+            
+        # Process non-empty batch
         tasks = [process_single_poster(path) for path in image_paths]
         await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Sort results by grade
-        results.sort(key=lambda x: x.final_grade, reverse=True)
+        # Sort results by grade if we have any
+        if results:
+            results.sort(key=lambda x: x.final_grade, reverse=True)
         
         # Update job with results
-        job = self.get_job(job_id)
-        if job:
+        if job_id in self.jobs:
+            job = self.jobs[job_id]
             job.results = results
             job.errors = errors
-            
-            # Set job status based on results
-            if not results and errors:
-                # No successful results, only errors
-                job.status = ProcessingStatus.FAILED
-            elif results and not errors:
-                # All successful, no errors
-                job.status = ProcessingStatus.COMPLETED
-            elif results and errors:
-                # Mixed results - some success, some errors
-                job.status = ProcessingStatus.COMPLETED  # Consider partially successful as completed
-                print(f"Job {job_id} completed with {len(results)} successful and {len(errors)} failed evaluations")
-            else:
-                # No results and no errors (shouldn't happen)
-                job.status = ProcessingStatus.FAILED
-                
+            job.processed_files = len(results)
             job.updated_at = datetime.utcnow()
+            
+            # Update status based on results
+            if not results and errors:
+                job.status = ProcessingStatus.FAILED
+                print(f"Job {job_id} failed with {len(errors)} errors")
+            else:
+                job.status = ProcessingStatus.COMPLETED
+                print(f"Job {job_id} completed with {len(results)} successful results")
         
         return results
 

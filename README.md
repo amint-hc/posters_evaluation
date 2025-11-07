@@ -157,10 +157,7 @@ poster-evaluation/
 │   ├── processors/
 │   │   └── output_generator.py # Async file generation
 │   └── utils/
-│       ├── config.py        # Configuration management
 │       └── validators.py    # File validation
-├── config/
-│   └── config.yaml          # Application settings
 ├── tests/                   # Comprehensive test suite
 │   ├── test_api.py         # API endpoint tests
 │   ├── test_evaluator.py   # Core logic tests
@@ -197,7 +194,6 @@ aiofiles>=23.0.0           # Async file operations
 
 # Configuration and Utilities
 python-dotenv>=1.0.0       # Environment variables
-pyyaml>=6.0                # YAML configuration
 pathlib2>=2.3.0            # Path utilities
 
 # Testing and Development

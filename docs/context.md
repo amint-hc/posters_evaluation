@@ -25,7 +25,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Create basic project structure
-mkdir -p src/{models,processors,utils} input output tests config
+mkdir -p src/{models,processors,utils} input output tests
 touch src/__init__.py src/main.py requirements.txt .env .gitignore
 ```
 
@@ -66,7 +66,6 @@ aiofiles>=23.0.0
 
 # Configuration & Utilities
 python-dotenv>=1.0.0
-pyyaml>=6.0
 pathlib2>=2.3.0
 typing-extensions>=4.0.0
 
@@ -1330,7 +1329,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY src/ ./src/
-COPY config/ ./config/
 
 # Create directories for uploads and outputs
 RUN mkdir -p uploads outputs
@@ -1367,7 +1365,6 @@ services:
     volumes:
       - ./uploads:/app/uploads
       - ./outputs:/app/outputs
-      - ./config:/app/config
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -1617,7 +1614,7 @@ cp .env.example .env
 # Edit .env with your OpenAI API key
 
 # Create directories
-mkdir -p uploads outputs config
+mkdir -p uploads outputs
 
 # Run development server
 uvicorn src.main:app --reload --host 0.0.0.0 --port 8000

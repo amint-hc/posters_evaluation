@@ -94,16 +94,16 @@ class TestBatchUploadEndpoint:
 
     def test_upload_batch_too_many_files(self, client, sample_image_data):
         """Test batch upload with too many files."""
-        # Create more files than the limit (assuming limit is 50)
+        # Create more files than the limit (50 files)
         files = [
             ("files", (f"poster{i}.png", io.BytesIO(sample_image_data), "image/png"))
-            for i in range(60)
+            for i in range(251)
         ]
         data = {"mode": "seven"}
         
-        response = client.post("/upload/batch", files=files, data=data)
-        
+        response = client.post("/upload/batch", files=files, data=data)    
         assert response.status_code == 400
+        assert "Too many files" in response.json()["detail"]
 
 class TestJobEndpoints:
     """Test job management endpoints."""

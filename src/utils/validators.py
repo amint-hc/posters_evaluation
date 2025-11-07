@@ -7,7 +7,7 @@ class PosterValidator:
     
     ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
     MAX_FILE_SIZE = 20 * 1024 * 1024  # 20MB
-    MAX_BATCH_SIZE = 50
+    MAX_BATCH_SIZE = 250
     
     @classmethod
     def validate_image_file(cls, file: UploadFile) -> bool:

@@ -49,10 +49,12 @@ class TestAsyncPosterEvaluator:
                     EvaluationMode.FIFTEEN
                 )
                 
-                assert result.Q1 == "12345"
-                assert result.Q2 == "Dr. Jane Smith"
-                assert result.Q3 == "John Doe"
-                assert result.poster_summary == "Machine Learning in Healthcare poster"
+                evaluation_result, log = result
+                assert evaluation_result.Q1 == "12345"
+                assert evaluation_result.Q2 == "Dr. Jane Smith"
+                assert evaluation_result.Q3 == "John Doe"
+                assert evaluation_result.poster_summary == "Machine Learning in Healthcare poster"
+                assert log.status == "ok"
                 mock_analyze.assert_called_once()
             finally:
                 # Clean up
@@ -68,8 +70,11 @@ class TestAsyncPosterEvaluator:
             Path("/nonexistent/file.png"), 
             EvaluationMode.FIFTEEN
         )
-        # Should return None for non-existent file
-        assert result is None
+        evaluation_result, log = result
+        # Should return None for evaluation_result and failed status for log
+        assert evaluation_result is None
+        assert log.status == "failed"
+        assert "No such file or directory" in log.error
     
     @pytest.mark.asyncio
     async def test_evaluate_batch_success(self):
@@ -130,10 +135,10 @@ class TestAsyncPosterEvaluator:
         # Evaluate empty batch
         results = await evaluator.evaluate_batch(job_id, [], EvaluationMode.SEVEN)
         
-        # Should return empty list
-        assert results == []
+        # Should return empty list of results
+        assert len(results) == 0
         
-        # Job should be completed
+        # Job should be completed with success even if empty
         job = evaluator.get_job(job_id)
         assert job.status.value == "completed"
     
@@ -184,10 +189,12 @@ class TestAsyncPosterEvaluator:
                     EvaluationMode.FIFTEEN
                 )
                 
-                assert result.poster_file == os.path.basename(temp_file)
-                assert result.Q1 == "12345"
-                assert result.Q2 == "Dr. Jane Smith"
-                assert result.poster_summary == "Machine Learning in Healthcare poster"
+                evaluation_result, log = result
+                assert log.file == os.path.basename(temp_file)
+                assert evaluation_result.Q1 == "12345"
+                assert evaluation_result.Q2 == "Dr. Jane Smith"
+                assert evaluation_result.poster_summary == "Machine Learning in Healthcare poster"
+                assert log.status == "ok"
                 
             finally:
                 # Clean up
@@ -213,8 +220,11 @@ class TestAsyncPosterEvaluator:
                     EvaluationMode.FIFTEEN
                 )
                 
-                # Should return None on error
-                assert result is None
+                evaluation_result, log = result
+                # Should return None for evaluation_result and error in log
+                assert evaluation_result is None
+                assert log.status == "failed"
+                assert log.error == "API Error"
                 
             finally:
                 # Clean up

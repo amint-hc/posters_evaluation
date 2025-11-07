@@ -40,6 +40,7 @@ app.add_middleware(
 UPLOAD_DIR = Path("uploads")
 OUTPUT_DIR = Path("outputs")
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
+MAX_BATCH_SIZE = 250  # Maximum number of files in batch upload
 
 # Ensure directories exist
 UPLOAD_DIR.mkdir(exist_ok=True)

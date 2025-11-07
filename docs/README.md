@@ -116,11 +116,7 @@ src/
 ├── processors/
 │   └── output_generator.py # File generation
 └── utils/
-    ├── config.py        # Configuration
     └── validators.py    # File validation
-
-config/
-└── config.yaml         # Application configuration
 
 tests/                   # Test suite
 uploads/                 # Uploaded files
@@ -130,7 +126,7 @@ venv/                    # Virtual environment (created by user)
 
 ## 🔧 Configuration
 
-Edit `config/config.yaml` to customize:
+Edit `.env` to customize:
 - OpenAI model settings
 - File processing options
 - Output formats
@@ -188,7 +184,7 @@ docker-compose -f docker-compose.yml up -d
 
 For issues and questions:
 1. Check the logs in `outputs/`
-2. Verify configuration in `config/config.yaml`
+2. Verify configuration in `.env`
 3. Run validation: `python validate.py`
 4. Run tests: `python run_tests.py`
 
