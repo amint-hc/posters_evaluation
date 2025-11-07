@@ -2,7 +2,7 @@
 
 ## Project Implementation Guide for Poster Evaluation System
 
-This document provides step-by-step implementation instructions for building the automated poster evaluation system using GPT-4 vision.
+This document provides step-by-step implementation instructions for building the automated poster evaluation system using GPT-4.1 model.
 
 ---
 
@@ -10,7 +10,7 @@ This document provides step-by-step implementation instructions for building the
 
 ### Prerequisites
 - **Python 3.8+** (Recommended: 3.10+)
-- **OpenAI API Key** with GPT-4 Vision access
+- **OpenAI API Key** with GPT-4.1 with vision input
 - **Git** for version control
 - **IDE/Editor** (VS Code recommended)
 
@@ -33,7 +33,7 @@ touch src/__init__.py src/main.py requirements.txt .env .gitignore
 Create `.env` file:
 ```env
 OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-4-vision-preview
+OPENAI_MODEL=gpt-4.1
 MAX_TOKENS=4096
 TEMPERATURE=0.1
 TIMEOUT_SECONDS=30
@@ -333,7 +333,6 @@ def calculate_final_grade(self, mode: EvaluationMode = EvaluationMode.FIFTEEN) -
 - Raw score (max 75) scaled to 100-point system
 - Excludes presence checks and global coherence
 - Emphasizes core content quality over formatting
-```
 
 ---
 
@@ -991,7 +990,7 @@ The application uses environment variables for configuration through a `.env` fi
 ```env
 # OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4-vision-preview
+OPENAI_MODEL=gpt-4.1
 MAX_TOKENS=4096
 TEMPERATURE=0.1
 TIMEOUT_SECONDS=30
@@ -1417,7 +1416,7 @@ exec gunicorn src.main:app \
 ```env
 # OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4-vision-preview
+OPENAI_MODEL=gpt-4.1
 MAX_TOKENS=4096
 TEMPERATURE=0.1
 TIMEOUT_SECONDS=30
@@ -1670,7 +1669,7 @@ This FastAPI implementation provides a robust, scalable foundation for the poste
 
 ---
 
-## 10. Troubleshooting Guide
+## 13. Troubleshooting Guide
 
 ### Common Issues & Solutions
 
@@ -1707,7 +1706,7 @@ except Exception as e:
 
 ---
 
-## 11. Next Steps & Enhancements
+## 14. Next Steps & Enhancements
 
 ### Phase 2 Features
 1. **GUI Development**: Desktop application with file selection
@@ -1721,5 +1720,3 @@ except Exception as e:
 2. **Caching**: Store processed results
 3. **Image Optimization**: Resize/compress before API calls
 4. **Rate Limiting**: Intelligent API throttling
-
-This implementation guide provides a complete roadmap for building the poster evaluation system. Follow the sections sequentially for a systematic development approach.
