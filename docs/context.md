@@ -6,7 +6,7 @@ This document provides step-by-step implementation instructions for building the
 
 ---
 
-## 1. Development Environment Setup
+## 1. Quick Start Guide
 
 ### Prerequisites
 - **Python 3.8+** (Recommended: 3.10+)
@@ -14,30 +14,41 @@ This document provides step-by-step implementation instructions for building the
 - **Git** for version control
 - **IDE/Editor** (VS Code recommended)
 
-### Initial Setup
+### Development Setup
 ```bash
-# Create project directory
-mkdir poster-evaluation
+# Clone and setup project
+git clone <repository-url>
 cd poster-evaluation
 
 # Create virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Create basic project structure
-mkdir -p src/{models,processors,utils} input output tests
-touch src/__init__.py src/main.py requirements.txt .env .gitignore
+# Install dependencies
+pip install -r requirements.txt
+
+# Setup environment
+cp .env.example .env
+# Edit .env with your OpenAI API key
+
+# Create directories
+mkdir -p uploads outputs
+
+# Run development server
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Environment Configuration
-Create `.env` file:
-```env
-OPENAI_API_KEY=your_api_key_here
-OPENAI_MODEL=gpt-4.1
-MAX_TOKENS=4096
-TEMPERATURE=0.1
-TIMEOUT_SECONDS=30
-```
+### API Endpoints
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
+
+### Basic Usage
+1. **Upload Single Poster**: POST `/upload/single`
+2. **Upload Batch**: POST `/upload/batch`
+3. **Check Job Status**: GET `/jobs/{job_id}`
+4. **Get Results**: GET `/jobs/{job_id}/results`
+5. **Download Files**: GET `/jobs/{job_id}/download/master`
 
 ---
 
@@ -512,121 +523,9 @@ evaluator = AsyncPosterEvaluator()
 
 ---
 
-### 6.2 Async Output Generator (`src/processors/output_generator.py`)
+## 5. FastAPI Application Implementation
 
-```python
-import json
-import asyncio
-import aiofiles
-import pandas as pd
-from pathlib import Path
-from typing import List
-from ..models.poster_data import PosterEvaluation, ProcessingLog
-
-class AsyncOutputGenerator:
-    """Generate all required output files asynchronously"""
-    
-    def __init__(self, output_dir: Path, mode: str = "fifteen"):
-        self.output_dir = output_dir
-        self.mode = mode
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-    
-    async def generate_master_results(self, evaluations: List[PosterEvaluation]) -> Path:
-        """Generate master CSV results file"""
-        filename = f"results_master_{self.mode}.csv"
-        filepath = self.output_dir / filename
-        
-        # Prepare data for CSV
-        data = []
-        for eval in evaluations:
-            data.append({
-                "Poster File": eval.poster_file,
-                "Final Grade": eval.final_grade,
-                "Project Number": eval.Q1 if eval.Q1 else "",
-                "Project Summary": eval.poster_summary,
-                "Evaluation Summary": eval.evaluation_summary
-            })
-        
-        # Create DataFrame and save
-        df = pd.DataFrame(data)
-        
-        # Use asyncio to write file
-        csv_content = df.to_csv(index=False)
-        async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
-            await f.write(csv_content)
-        
-        print(f"Master results saved to: {filepath}")
-        return filepath
-    
-    async def generate_individual_breakdowns(self, evaluations: List[PosterEvaluation]) -> List[Path]:
-        """Generate individual JSON breakdown files"""
-        breakdown_files = []
-        
-        async def write_breakdown_file(eval: PosterEvaluation):
-            # Determine filename
-            if eval.Q1 and eval.Q3:  # Project number and presenter found
-                filename = f"{eval.Q1}_{eval.Q3}.json"
-            else:
-                # Fallback naming
-                stem = Path(eval.poster_file).stem
-                filename = f"{stem}_Unknown.json"
-            
-            # Clean filename (remove invalid characters)
-            filename = "".join(c for c in filename if c.isalnum() or c in "._-")
-            filepath = self.output_dir / filename
-            
-            # Create JSON data
-            json_data = eval.dict()
-            
-            # Write JSON file asynchronously
-            async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
-                await f.write(json.dumps(json_data, indent=2, ensure_ascii=False))
-            
-            return filepath
-        
-        # Write all breakdown files concurrently
-        tasks = [write_breakdown_file(eval) for eval in evaluations]
-        breakdown_files = await asyncio.gather(*tasks)
-        
-        print(f"Generated {len(breakdown_files)} breakdown files")
-        return breakdown_files
-    
-    async def generate_run_log(self, logs: List[ProcessingLog]) -> Path:
-        """Generate JSONL run log file"""
-        filepath = self.output_dir / "run_log.jsonl"
-        
-        async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
-            for log in logs:
-                await f.write(log.json() + '\n')
-        
-        print(f"Run log saved to: {filepath}")
-        return filepath
-    
-    async def generate_all_outputs(self, evaluations: List[PosterEvaluation], 
-                                 logs: List[ProcessingLog]) -> dict:
-        """Generate all output files concurrently"""
-        
-        # Run all generation tasks concurrently
-        master_task = self.generate_master_results(evaluations)
-        breakdown_task = self.generate_individual_breakdowns(evaluations)
-        log_task = self.generate_run_log(logs)
-        
-        master_file, breakdown_files, log_file = await asyncio.gather(
-            master_task, breakdown_task, log_task
-        )
-        
-        return {
-            "master_file": master_file,
-            "breakdown_files": breakdown_files,
-            "log_file": log_file
-        }
-```
-
----
-
-## 6. FastAPI Application Implementation
-
-### 6.1 Main FastAPI App (`src/main.py`)
+### 5.1 Main FastAPI App (`src/main.py`)
 
 ```python
 import os
@@ -944,9 +843,119 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
 ```
 
+### 5.2 Async Output Generator (`src/processors/output_generator.py`)
+
+```python
+import json
+import asyncio
+import aiofiles
+import pandas as pd
+from pathlib import Path
+from typing import List
+from ..models.poster_data import PosterEvaluation, ProcessingLog
+
+class AsyncOutputGenerator:
+    """Generate all required output files asynchronously"""
+    
+    def __init__(self, output_dir: Path, mode: str = "fifteen"):
+        self.output_dir = output_dir
+        self.mode = mode
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+    
+    async def generate_master_results(self, evaluations: List[PosterEvaluation]) -> Path:
+        """Generate master CSV results file"""
+        filename = f"results_master_{self.mode}.csv"
+        filepath = self.output_dir / filename
+        
+        # Prepare data for CSV
+        data = []
+        for eval in evaluations:
+            data.append({
+                "Poster File": eval.poster_file,
+                "Final Grade": eval.final_grade,
+                "Project Number": eval.Q1 if eval.Q1 else "",
+                "Project Summary": eval.poster_summary,
+                "Evaluation Summary": eval.evaluation_summary
+            })
+        
+        # Create DataFrame and save
+        df = pd.DataFrame(data)
+        
+        # Use asyncio to write file
+        csv_content = df.to_csv(index=False)
+        async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
+            await f.write(csv_content)
+        
+        print(f"Master results saved to: {filepath}")
+        return filepath
+    
+    async def generate_individual_breakdowns(self, evaluations: List[PosterEvaluation]) -> List[Path]:
+        """Generate individual JSON breakdown files"""
+        breakdown_files = []
+        
+        async def write_breakdown_file(eval: PosterEvaluation):
+            # Determine filename
+            if eval.Q1 and eval.Q3:  # Project number and presenter found
+                filename = f"{eval.Q1}_{eval.Q3}.json"
+            else:
+                # Fallback naming
+                stem = Path(eval.poster_file).stem
+                filename = f"{stem}_Unknown.json"
+            
+            # Clean filename (remove invalid characters)
+            filename = "".join(c for c in filename if c.isalnum() or c in "._-")
+            filepath = self.output_dir / filename
+            
+            # Create JSON data
+            json_data = eval.dict()
+            
+            # Write JSON file asynchronously
+            async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
+                await f.write(json.dumps(json_data, indent=2, ensure_ascii=False))
+            
+            return filepath
+        
+        # Write all breakdown files concurrently
+        tasks = [write_breakdown_file(eval) for eval in evaluations]
+        breakdown_files = await asyncio.gather(*tasks)
+        
+        print(f"Generated {len(breakdown_files)} breakdown files")
+        return breakdown_files
+    
+    async def generate_run_log(self, logs: List[ProcessingLog]) -> Path:
+        """Generate JSONL run log file"""
+        filepath = self.output_dir / "run_log.jsonl"
+        
+        async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
+            for log in logs:
+                await f.write(log.json() + '\n')
+        
+        print(f"Run log saved to: {filepath}")
+        return filepath
+    
+    async def generate_all_outputs(self, evaluations: List[PosterEvaluation], 
+                                 logs: List[ProcessingLog]) -> dict:
+        """Generate all output files concurrently"""
+        
+        # Run all generation tasks concurrently
+        master_task = self.generate_master_results(evaluations)
+        breakdown_task = self.generate_individual_breakdowns(evaluations)
+        log_task = self.generate_run_log(logs)
+        
+        master_file, breakdown_files, log_file = await asyncio.gather(
+            master_task, breakdown_task, log_task
+        )
+        
+        return {
+            "master_file": master_file,
+            "breakdown_files": breakdown_files,
+            "log_file": log_file
+        }
+```
+
 ---
 
-## 7. FastAPI Project Structure
+## 6. FastAPI Project Structure
 
 ```
 poster-evaluation/
@@ -983,7 +992,7 @@ poster-evaluation/
 
 ---
 
-## 8. Configuration Management
+## 7. Configuration Management
 
 The application uses environment variables for configuration through a `.env` file:
 
@@ -1030,13 +1039,12 @@ Key configuration aspects:
    - Host and port configuration
    - CORS policy
    - Development reload settings
-```
 
 ---
 
-## 9. FastAPI Testing Strategy
+## 8. FastAPI Testing Strategy
 
-### 9.1 API Endpoint Tests (`tests/test_api.py`)
+### 8.1 API Endpoint Tests (`tests/test_api.py`)
 
 ```python
 import pytest
@@ -1155,74 +1163,7 @@ class TestJobManagement:
         # Note: In real tests, you'd wait for processing or mock it
 ```
 
-### 9.2 Integration Tests (`tests/test_integration.py`)
-
-```python
-import pytest
-import asyncio
-from pathlib import Path
-import tempfile
-from src.evaluator import AsyncPosterEvaluator
-from src.models.poster_data import EvaluationMode
-
-@pytest.mark.asyncio
-class TestIntegration:
-    
-    async def test_end_to_end_evaluation(self, sample_images_dir):
-        """Test complete evaluation pipeline"""
-        evaluator = AsyncPosterEvaluator()
-        
-        # Get sample images
-        image_files = list(sample_images_dir.glob("*.jpg"))
-        assert len(image_files) > 0
-        
-        # Create job
-        job_id = evaluator.create_job(EvaluationMode.SEVEN, len(image_files))
-        
-        # Process evaluation
-        results = await evaluator.evaluate_batch(job_id, image_files, EvaluationMode.SEVEN)
-        
-        # Verify results
-        assert len(results) > 0
-        assert all(r.final_grade >= 0 for r in results)
-        assert results == sorted(results, key=lambda x: x.final_grade, reverse=True)
-        
-        # Check job status
-        job = evaluator.get_job(job_id)
-        assert job.status.value == "completed"
-        assert job.processed_files == len(image_files)
-
-    async def test_concurrent_jobs(self, sample_images_dir):
-        """Test multiple concurrent evaluation jobs"""
-        evaluator = AsyncPosterEvaluator()
-        image_files = list(sample_images_dir.glob("*.jpg"))
-        
-        # Create multiple jobs
-        job_ids = []
-        for i in range(3):
-            job_id = evaluator.create_job(EvaluationMode.FIFTEEN, len(image_files))
-            job_ids.append(job_id)
-        
-        # Process all jobs concurrently
-        tasks = [
-            evaluator.evaluate_batch(job_id, image_files, EvaluationMode.FIFTEEN)
-            for job_id in job_ids
-        ]
-        
-        results_list = await asyncio.gather(*tasks)
-        
-        # Verify all jobs completed
-        for job_id, results in zip(job_ids, results_list):
-            job = evaluator.get_job(job_id)
-            assert job.status.value == "completed"
-            assert len(results) > 0
-```
-
----
-
-## 10. FastAPI Deployment
-
-### 8.1 Unit Tests (`tests/test_evaluator.py`)
+### 8.2 Unit Tests (`tests/test_evaluator.py`)
 
 ```python
 import pytest
@@ -1266,7 +1207,7 @@ class TestPosterEvaluator:
         assert results == sorted(results, key=lambda x: x.final_grade, reverse=True)
 ```
 
-### 8.2 Integration Tests (`tests/test_integration.py`)
+### 8.3 Integration Tests (`tests/test_integration.py`)
 
 ```python
 import pytest
@@ -1309,7 +1250,7 @@ class TestIntegration:
 
 ## 9. Deployment & Production
 
-### 10.1 Docker Configuration
+### 9.1 Docker Configuration
 
 **Dockerfile:**
 ```dockerfile
@@ -1390,7 +1331,7 @@ services:
     restart: unless-stopped
 ```
 
-### 10.2 Production Deployment
+### 9.2 Production Deployment
 
 **Startup Script (`start.sh`):**
 ```bash
@@ -1436,7 +1377,7 @@ CLEANUP_AFTER_DAYS=7
 ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
 ```
 
-### 10.3 API Usage Examples
+### 9.3 API Usage Examples
 
 **Python Client Example:**
 ```python
@@ -1593,83 +1534,7 @@ class PosterEvaluationClient {
 
 ---
 
-## 11. Quick Start Guide
-
-### Development Setup
-```bash
-# Clone and setup project
-git clone <repository-url>
-cd poster-evaluation
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup environment
-cp .env.example .env
-# Edit .env with your OpenAI API key
-
-# Create directories
-mkdir -p uploads outputs
-
-# Run development server
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### API Endpoints
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **Health Check**: http://localhost:8000/health
-
-### Basic Usage
-1. **Upload Single Poster**: POST `/upload/single`
-2. **Upload Batch**: POST `/upload/batch`
-3. **Check Job Status**: GET `/jobs/{job_id}`
-4. **Get Results**: GET `/jobs/{job_id}/results`
-5. **Download Files**: GET `/jobs/{job_id}/download/master`
-
----
-
-## 12. Advantages of FastAPI Over CLI
-
-### ✅ **Better Architecture**
-- **RESTful API**: Standard HTTP endpoints for integration
-- **Async Processing**: Non-blocking evaluation with job tracking
-- **Scalability**: Easy horizontal scaling with load balancers
-- **Microservices Ready**: Can be part of larger architecture
-
-### ✅ **User Experience**
-- **Real-time Progress**: Job status tracking and progress updates
-- **File Management**: Automatic file handling and cleanup
-- **Multiple Interfaces**: Can support web UI, mobile apps, etc.
-- **Background Processing**: Non-blocking uploads and processing
-
-### ✅ **Production Features**
-- **Auto Documentation**: Built-in OpenAPI/Swagger docs
-- **Input Validation**: Automatic request/response validation
-- **Error Handling**: Structured error responses
-- **Monitoring**: Built-in metrics and health checks
-
-### ✅ **Integration Capabilities**
-- **Webhook Support**: Notification callbacks when jobs complete
-- **API Keys**: Authentication and rate limiting support
-- **CORS**: Cross-origin resource sharing for web frontends
-- **OpenAPI**: Standard API specification for client generation
-
-### ✅ **Development Benefits**
-- **Type Safety**: Pydantic models for data validation
-- **Testing**: Comprehensive test suite with async support
-- **Hot Reload**: Development server with auto-restart
-- **IDE Support**: Full IntelliSense and type checking
-
-This FastAPI implementation provides a robust, scalable foundation for the poster evaluation system that can easily integrate with other applications and scale to handle production workloads.
-
----
-
-## 13. Troubleshooting Guide
+## 10. Troubleshooting Guide
 
 ### Common Issues & Solutions
 
@@ -1703,20 +1568,3 @@ except Exception as e:
 - Verify write permissions on output directory
 - Check filename character restrictions
 - Ensure CSV encoding handles special characters
-
----
-
-## 14. Next Steps & Enhancements
-
-### Phase 2 Features
-1. **GUI Development**: Desktop application with file selection
-2. **Multi-language**: Hebrew text processing support
-3. **PDF Support**: Direct PDF poster analysis
-4. **Batch Analytics**: Statistical analysis dashboard
-5. **Export Options**: Multiple output formats (Excel, PDF reports)
-
-### Performance Optimizations
-1. **Async Processing**: Parallel API calls
-2. **Caching**: Store processed results
-3. **Image Optimization**: Resize/compress before API calls
-4. **Rate Limiting**: Intelligent API throttling
