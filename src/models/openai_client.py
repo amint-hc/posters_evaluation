@@ -27,7 +27,7 @@ class AsyncOpenAIVisionClient:
             )
         
         self.client = AsyncOpenAI(api_key=api_key)
-        self.model = os.getenv("OPENAI_MODEL", "gpt-4o")
+        self.model = os.getenv("OPENAI_MODEL", "gpt-4.1")
         self.max_tokens = int(os.getenv("MAX_TOKENS", "4096"))
         self.temperature = float(os.getenv("TEMPERATURE", "0.1"))
         self.timeout = int(os.getenv("TIMEOUT_SECONDS", "30"))
