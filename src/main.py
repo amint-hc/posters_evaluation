@@ -139,11 +139,15 @@ async def upload_single_poster(
 @app.post("/upload/batch", response_model=BatchUploadResponse, tags=["Evaluation"])
 async def upload_batch_posters(
     background_tasks: BackgroundTasks,
-    files: List[UploadFile] = File(...),
+    files: List[UploadFile] = File(
+        ...,
+        description="Select multiple poster files to evaluate. Accepts JPG, JPEG, and PNG files.",
+        media_type="image/*",
+    ),
     mode: EvaluationMode = EvaluationMode.FIFTEEN
 ):
-    """Upload and evaluate multiple posters"""
-    
+    """Upload and evaluate multiple posters. Allows selecting multiple files at once."""
+
     if len(files) > 250:  # Reasonable limit
         raise HTTPException(status_code=400, detail="Too many files. Maximum 250 files per batch.")
 

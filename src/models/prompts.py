@@ -51,35 +51,3 @@ Return response in this exact JSON format:
   "overall_opinion": "sentence_with_required_ending"
 }
 """
-
-SEVEN_QUESTION_PROMPT = """
-You are an expert academic poster evaluator. Analyze this graduation project poster using the 7-question evaluation mode.
-
-IMPORTANT: Return your response as a valid JSON object with the exact field names specified below.
-
-Focus only on these quality questions (ignore presence/formatting):
-- Q6: Topic-Introduction connection (return exactly one of: 0, 4, 7, 10)
-- Q7: Introduction-Motivation connection (return exactly one of: 0, 1, 3, 5)
-- Q8: Conclusions supported by results (return exactly one of: 0, 4, 7, 10)
-- Q9: Overall poster quality/layout/readability (return exactly one of: 0, 10, 18, 25)
-- Q11: Graphs relevance & clarity (return exactly one of: 0, 10, 15)
-- Q12: Introduction quality & link to conclusions (return exactly one of: 0, 3, 4, 5)
-- Q13: Implementation detail level (return exactly one of: 0, 1, 3, 5)
-
-Also provide:
-- poster_summary: Up to 4 lines describing the project
-- evaluation_summary: Up to 4 lines describing the evaluation
-
-Return response in this exact JSON format:
-{
-  "Q6": numeric_value_from_bins,
-  "Q7": numeric_value_from_bins,
-  "Q8": numeric_value_from_bins,
-  "Q9": numeric_value_from_bins,
-  "Q11": numeric_value_from_bins,
-  "Q12": numeric_value_from_bins,
-  "Q13": numeric_value_from_bins,
-  "poster_summary": "text_up_to_4_lines",
-  "evaluation_summary": "text_up_to_4_lines"
-}
-"""

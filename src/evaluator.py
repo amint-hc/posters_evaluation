@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 from .models.openai_client import AsyncOpenAIVisionClient
-from .models.prompts import POSTER_EVALUATION_PROMPT, SEVEN_QUESTION_PROMPT
+from .models.prompts import POSTER_EVALUATION_PROMPT
 from .models.poster_data import (
     PosterEvaluation, ProcessingLog, EvaluationJob, 
     EvaluationMode, ProcessingStatus
@@ -65,12 +65,8 @@ class AsyncPosterEvaluator:
         )
         
         try:
-            # Select appropriate prompt
-            prompt = (SEVEN_QUESTION_PROMPT if mode == EvaluationMode.SEVEN 
-                     else POSTER_EVALUATION_PROMPT)
-            
-            # Get AI analysis
-            response = await self.client.analyze_poster(image_path, prompt)
+            # Use the same prompt for all modes
+            response = await self.client.analyze_poster(image_path, POSTER_EVALUATION_PROMPT)
             
             # Check if response content exists and is not empty
             if not response or "content" not in response:
@@ -103,8 +99,8 @@ class AsyncPosterEvaluator:
             # Create evaluation object
             evaluation = self._create_evaluation(image_path, analysis_data)
             
-            # Calculate final grade
-            evaluation.final_grade = evaluation.calculate_final_grade()
+            # Calculate final grade based on mode
+            evaluation.final_grade = evaluation.calculate_final_grade(mode)
             
             # Update processing log with success info
             processing_log.grade = evaluation.final_grade

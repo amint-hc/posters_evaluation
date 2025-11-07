@@ -140,20 +140,26 @@ class PosterEvaluation(BaseModel):
     # Calculated score
     final_grade: int = Field(ge=0, le=100)
     
-    def calculate_final_grade(self) -> int:
-        """Calculate final grade from all question scores"""
-        presence_score = sum([
-            2 if self.Q1 else 0,
-            2 if self.Q2 else 0,
-            2 if self.Q3 else 0,
-            2 if self.Q4 else 0,
-            2 if self.Q5 else 0
-        ])
-        
+    def calculate_final_grade(self, mode: EvaluationMode = EvaluationMode.FIFTEEN) -> int:
+        """Calculate final grade based on evaluation mode"""
+        # Common quality metrics for both modes
         quality_score = (self.Q6 + self.Q7 + self.Q8 + self.Q9 + 
-                        self.Q11 + self.Q12 + self.Q13 + self.Q15)
+                        self.Q11 + self.Q12 + self.Q13)
         
-        return presence_score + quality_score
+        if mode == EvaluationMode.FIFTEEN:
+            # Include presence scores and global coherence for FIFTEEN mode
+            presence_score = sum([
+                2 if self.Q1 else 0,
+                2 if self.Q2 else 0,
+                2 if self.Q3 else 0,
+                2 if self.Q4 else 0,
+                2 if self.Q5 else 0
+            ])
+            quality_score += self.Q15  # Add global coherence
+            return presence_score + quality_score
+        else:  # SEVEN mode
+            # Scale quality score to 100-point system
+            return quality_score * 100 // 75
 
 class ProcessingLog(BaseModel):
     """Log entry for processing telemetry"""
@@ -270,94 +276,64 @@ class AsyncOpenAIVisionClient:
             raise Exception(f"OpenAI API error: {str(e)}")
 ```
 
-### 3.3 Evaluation Prompts (`src/models/prompts.py`)
+### 3.3 Evaluation System Architecture
 
+The system implements a unified evaluation approach with mode-specific grade calculation:
+
+#### 3.3.1 Unified Prompt System (`src/models/prompts.py`)
+The evaluation uses a single standardized prompt for all evaluation modes:
 ```python
 POSTER_EVALUATION_PROMPT = """
-You are an expert academic poster evaluator. Analyze this graduation project poster and answer the following questions exactly as specified.
-
-IMPORTANT: Return your response as a valid JSON object with the exact field names specified below.
-
-Analyze the poster and provide:
-
-1. PRESENCE & FORMATTING (Binary 2/0 points each):
-   - Q1: Project number in format x-x-x-x (return the exact number if found, empty string if not)
-   - Q2: Advisor name (return exact name if found, empty string if not)
-   - Q3: Presenter name(s) (return name(s), join multiple with " and ", empty string if not found)
-   - Q4: Topic sentence present early in text (return true/false)
-   - Q5: Background mostly white (return true/false)
-
-2. QUALITY & COHERENCE (Specific bin values only):
-   - Q6: Topic-Introduction connection (return exactly one of: 0, 4, 7, 10)
-   - Q7: Introduction-Motivation connection (return exactly one of: 0, 1, 3, 5)
-   - Q8: Conclusions supported by results (return exactly one of: 0, 4, 7, 10)
-   - Q9: Overall poster quality/layout/readability (return exactly one of: 0, 10, 18, 25)
-   - Q11: Graphs relevance & clarity (return exactly one of: 0, 10, 15)
-   - Q12: Introduction quality & link to conclusions (return exactly one of: 0, 3, 4, 5)
-   - Q13: Implementation detail level (return exactly one of: 0, 1, 3, 5)
-   - Q15: Connections across sections (return exactly one of: 0, 5, 10, 15)
-
-3. SUMMARIES:
-   - poster_summary: Up to 4 lines describing the project
-   - evaluation_summary: Up to 4 lines describing the evaluation
-   - overall_opinion: One sentence ending with exactly one of:
-     * "The section's explanations in the poster are clear"
-     * "The poster contains too much verbal information"  
-     * "Visual explanation is missing"
-     * "The poster visuality is good"
-
-Return response in this exact JSON format:
-{
-  "Q1": "string_value_or_empty",
-  "Q2": "string_value_or_empty", 
-  "Q3": "string_value_or_empty",
-  "Q4": boolean_value,
-  "Q5": boolean_value,
-  "Q6": numeric_value_from_bins,
-  "Q7": numeric_value_from_bins,
-  "Q8": numeric_value_from_bins,
-  "Q9": numeric_value_from_bins,
-  "Q11": numeric_value_from_bins,
-  "Q12": numeric_value_from_bins,
-  "Q13": numeric_value_from_bins,
-  "Q15": numeric_value_from_bins,
-  "poster_summary": "text_up_to_4_lines",
-  "evaluation_summary": "text_up_to_4_lines", 
-  "overall_opinion": "sentence_with_required_ending"
-}
+You are an expert academic poster evaluator. Analyze this graduation project poster...
+[Prompt details remain the same]
 """
+```
 
-SEVEN_QUESTION_PROMPT = """
-You are an expert academic poster evaluator. Analyze this graduation project poster using the 7-question evaluation mode.
+Key characteristics:
+- Single prompt handles all evaluation modes
+- Comprehensive data collection for all criteria
+- Structured JSON response format
+- Covers both presence checks and quality metrics
 
-IMPORTANT: Return your response as a valid JSON object with the exact field names specified below.
+#### 3.3.2 Mode-Specific Grade Calculation (`src/models/poster_data.py`)
+Grade calculation varies by mode while using the same input data:
 
-Focus only on these quality questions (ignore presence/formatting):
-- Q6: Topic-Introduction connection (return exactly one of: 0, 4, 7, 10)
-- Q7: Introduction-Motivation connection (return exactly one of: 0, 1, 3, 5)
-- Q8: Conclusions supported by results (return exactly one of: 0, 4, 7, 10)
-- Q9: Overall poster quality/layout/readability (return exactly one of: 0, 10, 18, 25)
-- Q11: Graphs relevance & clarity (return exactly one of: 0, 10, 15)
-- Q12: Introduction quality & link to conclusions (return exactly one of: 0, 3, 4, 5)
-- Q13: Implementation detail level (return exactly one of: 0, 1, 3, 5)
+```python
+def calculate_final_grade(self, mode: EvaluationMode = EvaluationMode.FIFTEEN) -> int:
+    """Calculate final grade from all question scores"""
+    # Common quality metrics for both modes
+    quality_score = (self.Q6 + self.Q7 + self.Q8 + self.Q9 + 
+                    self.Q11 + self.Q12 + self.Q13)
+    
+    if mode == EvaluationMode.FIFTEEN:
+        # Full evaluation including presence and coherence
+        presence_score = sum([
+            2 if self.Q1 else 0,  # Project number
+            2 if self.Q2 else 0,  # Advisor name
+            2 if self.Q3 else 0,  # Presenter(s)
+            2 if self.Q4 else 0,  # Topic present
+            2 if self.Q5 else 0   # White background
+        ])
+        quality_score += self.Q15  # Add global coherence
+        return presence_score + quality_score
+    else:  # SEVEN mode
+        # Quality-focused evaluation
+        return quality_score * 100 // 75  # Scale to 100
+```
 
-Also provide:
-- poster_summary: Up to 4 lines describing the project
-- evaluation_summary: Up to 4 lines describing the evaluation
+**FIFTEEN Mode Scoring (Max 100 points):**
+- Presence metrics (Q1-Q5): 10 points
+  * 2 points each for basic formatting requirements
+- Quality metrics (Q6-Q13): 75 points
+  * Detailed assessment of content and presentation
+- Global coherence (Q15): 15 points
+  * Overall structure and flow evaluation
 
-Return response in this exact JSON format:
-{
-  "Q6": numeric_value_from_bins,
-  "Q7": numeric_value_from_bins,
-  "Q8": numeric_value_from_bins,
-  "Q9": numeric_value_from_bins,
-  "Q11": numeric_value_from_bins,
-  "Q12": numeric_value_from_bins,
-  "Q13": numeric_value_from_bins,
-  "poster_summary": "text_up_to_4_lines",
-  "evaluation_summary": "text_up_to_4_lines"
-}
-"""
+**SEVEN Mode Scoring (Max 100 points):**
+- Focuses on quality metrics only (Q6-Q13)
+- Raw score (max 75) scaled to 100-point system
+- Excludes presence checks and global coherence
+- Emphasizes core content quality over formatting
 ```
 
 ---
@@ -375,7 +351,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 from datetime import datetime
 from .models.openai_client import AsyncOpenAIVisionClient
-from .models.prompts import POSTER_EVALUATION_PROMPT, SEVEN_QUESTION_PROMPT
+from .models.prompts import POSTER_EVALUATION_PROMPT
 from .models.poster_data import (
     PosterEvaluation, ProcessingLog, EvaluationJob, 
     EvaluationMode, ProcessingStatus
@@ -416,32 +392,67 @@ class AsyncPosterEvaluator:
             self.jobs[job_id].status = status
             self.jobs[job_id].updated_at = datetime.utcnow()
     
-    async def evaluate_poster(self, image_path: Path, mode: EvaluationMode) -> Optional[PosterEvaluation]:
-        """Evaluate a single poster image"""
+    async def evaluate_poster(self, image_path: Path, mode: EvaluationMode) -> Tuple[Optional[PosterEvaluation], ProcessingLog]:
+        """Evaluate a single poster image and return both evaluation and processing log"""
         start_time = time.time()
+        processing_log = ProcessingLog(
+            file=image_path.name,
+            status="ok",
+            grade=None,
+            duration_ms=None,
+            error=None
+        )
         
         try:
-            # Select appropriate prompt
-            prompt = (SEVEN_QUESTION_PROMPT if mode == EvaluationMode.SEVEN 
-                     else POSTER_EVALUATION_PROMPT)
+            # Use the same prompt for all modes
+            response = await self.client.analyze_poster(image_path, POSTER_EVALUATION_PROMPT)
             
-            # Get AI analysis
-            response = await self.client.analyze_poster(image_path, prompt)
+            # Check if response content exists and is not empty
+            if not response or "content" not in response:
+                print(f"Error: No content in response for {image_path.name}")
+                processing_log.status = "failed"
+                processing_log.error = "No content in response"
+                return None, processing_log
+
+            content = response["content"]
+            if not content or content.strip() == "":
+                print(f"Error: Empty content in response for {image_path.name}")
+                processing_log.status = "failed"
+                processing_log.error = "Empty content in response"
+                return None, processing_log
+
+            print(f"Raw response content for {image_path.name}: {content[:200]}...")
+            
+            # Clean the content - extract JSON from markdown code blocks if present
+            cleaned_content = self._extract_json_from_content(content)
             
             # Parse JSON response
-            analysis_data = json.loads(response["content"])
+            try:
+                analysis_data = json.loads(cleaned_content)
+            except json.JSONDecodeError as json_err:
+                print(f"JSON parsing error for {image_path.name}: {str(json_err)}")
+                processing_log.status = "failed"
+                processing_log.error = f"JSON parsing error: {str(json_err)}"
+                return None, processing_log
             
             # Create evaluation object
             evaluation = self._create_evaluation(image_path, analysis_data)
             
-            # Calculate final grade
-            evaluation.final_grade = evaluation.calculate_final_grade()
+            # Calculate final grade based on mode
+            evaluation.final_grade = evaluation.calculate_final_grade(mode)
             
-            return evaluation
+            # Update processing log with success info
+            processing_log.grade = evaluation.final_grade
+            processing_log.duration_ms = int((time.time() - start_time) * 1000)
+            
+            return evaluation, processing_log
             
         except Exception as e:
             print(f"Error evaluating {image_path.name}: {str(e)}")
-            return None
+            # Update processing log with error info
+            processing_log.status = "failed"
+            processing_log.error = "timeout" if "timeout" in str(e).lower() else str(e)
+            return None, processing_log
     
     def _create_evaluation(self, image_path: Path, data: Dict) -> PosterEvaluation:
         """Create PosterEvaluation from API response"""
@@ -955,7 +966,6 @@ poster-evaluation/
 │   │   └── output_generator.py # Async output generation
 │   └── utils/
 │       ├── __init__.py
-│       ├── config.py        # Configuration management
 │       └── validators.py    # Input validation
 ├── uploads/                 # Uploaded poster files (by job_id)
 ├── outputs/                 # Generated results (by job_id)
@@ -964,8 +974,6 @@ poster-evaluation/
 │   ├── test_api.py         # FastAPI endpoint tests
 │   ├── test_evaluator.py   # Evaluation logic tests
 │   └── test_integration.py # End-to-end tests
-├── config/
-│   └── config.yaml         # Application configuration
 ├── requirements.txt
 ├── .env.example           # Environment template
 ├── .env                   # Environment variables (gitignored)
@@ -979,83 +987,51 @@ poster-evaluation/
 
 ## 8. Configuration Management
 
-### 7.1 Configuration File (`config/config.yaml`)
+The application uses environment variables for configuration through a `.env` file:
 
-```yaml
+```env
 # OpenAI Configuration
-openai:
-  model: "gpt-4-vision-preview"
-  max_tokens: 4096
-  temperature: 0.1
-  timeout_seconds: 30
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4-vision-preview
+MAX_TOKENS=4096
+TEMPERATURE=0.1
+TIMEOUT_SECONDS=30
 
-# Processing Configuration  
-processing:
-  supported_formats: [".jpg", ".jpeg", ".png"]
-  max_image_size_mb: 20
-  retry_attempts: 3
-  batch_size: 1
+# FastAPI Configuration
+APP_HOST=0.0.0.0
+APP_PORT=8000
+APP_RELOAD=false
+APP_LOG_LEVEL=info
 
-# Output Configuration
-output:
-  master_filename_template: "results_master_{mode}.csv"
-  breakdown_filename_template: "{project_number}_{presenter}.json"
-  log_filename: "run_log.jsonl"
-  excel_support: true
+# File Storage Settings
+MAX_UPLOAD_SIZE=20971520  # 20MB
+MAX_FILES_PER_BATCH=50
+CLEANUP_AFTER_DAYS=7
 
-# Evaluation Configuration
-evaluation:
-  default_mode: "fifteen"
-  modes:
-    fifteen:
-      questions: ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q11", "Q12", "Q13", "Q15"]
-      max_score: 100
-    seven:
-      questions: ["Q6", "Q7", "Q8", "Q9", "Q11", "Q12", "Q13"]
-      max_score: 90
+# CORS Configuration
+ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
 ```
 
-### 7.2 Configuration Loader (`src/utils/config.py`)
+Key configuration aspects:
 
-```python
-import yaml
-from pathlib import Path
-from typing import Dict, Any
+1. **OpenAI Integration:**
+   - API key management
+   - Model selection (GPT-4 Vision)
+   - Request parameters (tokens, temperature)
 
-class Config:
-    """Configuration management"""
-    
-    def __init__(self, config_path: Path = None):
-        if config_path is None:
-            config_path = Path(__file__).parent.parent.parent / "config" / "config.yaml"
-        
-        with open(config_path, 'r') as f:
-            self.data = yaml.safe_load(f)
-    
-    def get(self, key: str, default: Any = None) -> Any:
-        """Get configuration value using dot notation"""
-        keys = key.split('.')
-        value = self.data
-        
-        for k in keys:
-            if isinstance(value, dict) and k in value:
-                value = value[k]
-            else:
-                return default
-        
-        return value
-    
-    @property
-    def openai_config(self) -> Dict[str, Any]:
-        return self.data.get('openai', {})
-    
-    @property
-    def processing_config(self) -> Dict[str, Any]:
-        return self.data.get('processing', {})
-    
-    @property
-    def output_config(self) -> Dict[str, Any]:
-        return self.data.get('output', {})
+2. **File Processing:**
+   - Supported formats: JPG, JPEG, PNG
+   - File size limits
+   - Batch processing limits
+
+3. **Evaluation Modes:**
+   - FIFTEEN mode: Full evaluation with presence and coherence scores
+   - SEVEN mode: Quality-focused evaluation with score scaling
+
+4. **Server Settings:**
+   - Host and port configuration
+   - CORS policy
+   - Development reload settings
 ```
 
 ---
@@ -1263,18 +1239,24 @@ class TestPosterEvaluator:
         assert evaluator.mode == "fifteen"
         assert len(evaluator.results) == 0
     
-    def test_grade_calculation(self):
+    def test_grade_calculation_modes(self):
+        """Test grade calculation in both modes"""
         evaluation = PosterEvaluation(
             poster_file="test.jpg",
-            Q4=True,  # 2 points
-            Q5=True,  # 2 points  
-            Q6=10,    # 10 points
-            Q9=25,    # 25 points
-            final_grade=0
+            Q1="23-1-1-1234",  # 2 points in FIFTEEN mode
+            Q4=True,           # 2 points in FIFTEEN mode
+            Q6=10,             # 10 points in both modes
+            Q9=25,             # 25 points in both modes
+            Q15=15             # 15 points in FIFTEEN mode only
         )
         
-        calculated_grade = evaluation.calculate_final_grade()
-        assert calculated_grade == 39  # 2+2+10+25
+        # Test FIFTEEN mode
+        fifteen_grade = evaluation.calculate_final_grade(mode=EvaluationMode.FIFTEEN)
+        assert fifteen_grade == 52  # 2+2+10+25+15 (presence + quality + coherence)
+        
+        # Test SEVEN mode
+        seven_grade = evaluation.calculate_final_grade(mode=EvaluationMode.SEVEN)
+        assert seven_grade == 46  # (35 * 100) // 75 (scaled quality score)
     
     @pytest.mark.integration
     def test_batch_processing(self, sample_images_dir):

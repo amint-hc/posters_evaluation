@@ -50,20 +50,23 @@ class PosterEvaluation(BaseModel):
     # Calculated score
     final_grade: int = Field(ge=0, le=100, default=0)
     
-    def calculate_final_grade(self) -> int:
+    def calculate_final_grade(self, mode: EvaluationMode = EvaluationMode.FIFTEEN) -> int:
         """Calculate final grade from all question scores"""
-        presence_score = sum([
-            2 if self.Q1 else 0,
-            2 if self.Q2 else 0,
-            2 if self.Q3 else 0,
-            2 if self.Q4 else 0,
-            2 if self.Q5 else 0
-        ])
-        
         quality_score = (self.Q6 + self.Q7 + self.Q8 + self.Q9 + 
-                        self.Q11 + self.Q12 + self.Q13 + self.Q15)
+                        self.Q11 + self.Q12 + self.Q13)
         
-        return presence_score + quality_score
+        if mode == EvaluationMode.FIFTEEN:
+            presence_score = sum([
+                2 if self.Q1 else 0,
+                2 if self.Q2 else 0,
+                2 if self.Q3 else 0,
+                2 if self.Q4 else 0,
+                2 if self.Q5 else 0
+            ])
+            quality_score += self.Q15  # Add Q15 only for FIFTEEN mode
+            return presence_score + quality_score
+        else:  # SEVEN mode
+            return quality_score * 100 // 75  # Scale to 100
 
 class ProcessingLog(BaseModel):
     """Log entry for processing telemetry"""
