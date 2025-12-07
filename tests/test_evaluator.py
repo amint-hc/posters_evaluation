@@ -18,7 +18,7 @@ class TestAsyncPosterEvaluator:
             "project_number": "12345",
             "advisor_name": "Dr. Jane Smith",
             "presenter_names": "John Doe",
-            "Q1": 5, "Q2": 5, "Q3": 5, "Q4": 5,
+            "Q1": 7, "Q2": 8, "Q3": 5, "Q4": 5,
             "Q5": 8, "Q6": 6, "Q7": 6,
             "Q8": 6, "Q9": 5, "Q10": 4,
             "Q11": 5, "Q12": 10, "Q13": 5, "Q14": 5,
@@ -47,7 +47,7 @@ class TestAsyncPosterEvaluator:
                 assert evaluation_result.project_number == "12345"
                 assert evaluation_result.advisor_name == "Dr. Jane Smith"
                 assert evaluation_result.presenter_names == "John Doe"
-                assert evaluation_result.Q1 == 5
+                assert evaluation_result.Q1 == 7
                 assert evaluation_result.poster_summary == "Machine Learning in Healthcare poster"
                 assert log.status == "ok"
                 mock_analyze.assert_called_once()

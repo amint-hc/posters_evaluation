@@ -7,8 +7,8 @@ services:
       - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1}
-      - MAX_TOKENS=${MAX_TOKENS:-4096}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-5.1}
+      - MAX_COMPLETION_TOKENS=${MAX_COMPLETION_TOKENS:-4096}
       - TEMPERATURE=${TEMPERATURE:-0.1}
       - TIMEOUT_SECONDS=${TIMEOUT_SECONDS:-30}
     volumes:

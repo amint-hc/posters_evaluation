@@ -27,10 +27,10 @@ def run_tests():
         
         if result.returncode == 0:
             print("\n" + "=" * 50)
-            print("✅ All tests passed!")
+            print("ALL TESTS PASSED!")
         else:
             print("\n" + "=" * 50)
-            print("❌ Some tests failed!")
+            print("SOME TESTS FAILED!")
             return False
             
     except Exception as e:
