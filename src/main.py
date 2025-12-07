@@ -12,7 +12,7 @@ from .processors.output_generator import AsyncOutputGenerator
 from .models.poster_data import (
     EvaluationResponse,
     BatchUploadResponse, 
-    EvaluationJob, EvaluationMode, ProcessingStatus
+    EvaluationJob, ProcessingStatus
 )
 
 # Load environment variables
@@ -66,7 +66,7 @@ async def save_uploaded_file(file: UploadFile, job_id: str) -> Path:
     
     return file_path
 
-async def process_evaluation_job(job_id: str, mode: EvaluationMode):
+async def process_evaluation_job(job_id: str):
     """Background task to process evaluation job"""
     try:
         # Get uploaded files for this job
@@ -81,7 +81,7 @@ async def process_evaluation_job(job_id: str, mode: EvaluationMode):
             return
         
         # Process evaluations
-        results = await get_evaluator().evaluate_batch(job_id, image_files, mode)
+        results = await get_evaluator().evaluate_batch(job_id, image_files)
         
         # Get the job to access processing logs
         job = get_evaluator().get_job(job_id)
@@ -91,7 +91,7 @@ async def process_evaluation_job(job_id: str, mode: EvaluationMode):
             return
         
         # Generate output files
-        output_gen = AsyncOutputGenerator(OUTPUT_DIR / job_id, mode.value)
+        output_gen = AsyncOutputGenerator(OUTPUT_DIR / job_id)
         await output_gen.generate_all_outputs(results, job.processing_logs)
         
     except Exception as e:
@@ -107,7 +107,6 @@ async def root():
 async def upload_single_poster(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    mode: EvaluationMode = EvaluationMode.FIFTEEN
 ):
     """Upload and evaluate a single poster"""
     
@@ -118,14 +117,14 @@ async def upload_single_poster(
         )
     
     # Create job
-    job_id = get_evaluator().create_job(mode, 1)
+    job_id = get_evaluator().create_job(1)
     
     try:
         # Save file
         await save_uploaded_file(file, job_id)
         
         # Start background processing
-        background_tasks.add_task(process_evaluation_job, job_id, mode)
+        background_tasks.add_task(process_evaluation_job, job_id)
         
         return EvaluationResponse(
             job_id=job_id,
@@ -145,7 +144,6 @@ async def upload_batch_posters(
         description="Select multiple poster files to evaluate. Accepts JPG, JPEG, and PNG files.",
         media_type="image/*",
     ),
-    mode: EvaluationMode = EvaluationMode.FIFTEEN
 ):
     """Upload and evaluate multiple posters. Allows selecting multiple files at once."""
 
@@ -166,7 +164,7 @@ async def upload_batch_posters(
         raise HTTPException(status_code=400, detail="No valid image files found in upload.")
     
     # Create job
-    job_id = get_evaluator().create_job(mode, len(valid_files))
+    job_id = get_evaluator().create_job(len(valid_files))
     
     try:
         # Save files
@@ -174,7 +172,7 @@ async def upload_batch_posters(
             await save_uploaded_file(file, job_id)
         
         # Start background processing
-        background_tasks.add_task(process_evaluation_job, job_id, mode)
+        background_tasks.add_task(process_evaluation_job, job_id)
         
         return BatchUploadResponse(
             job_id=job_id,
@@ -228,13 +226,13 @@ async def download_master_results(job_id: str):
     if not job or job.status != ProcessingStatus.COMPLETED:
         raise HTTPException(status_code=404, detail="Results not available")
     
-    file_path = OUTPUT_DIR / job_id / f"results_master_{job.mode.value}.csv"
+    file_path = OUTPUT_DIR / job_id / f"results_master.csv"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Master results file not found")
     
     return FileResponse(
         path=file_path,
-        filename=f"results_master_{job.mode.value}.csv",
+        filename=f"results_master.csv",
         media_type="text/csv"
     )
 

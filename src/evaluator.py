@@ -9,7 +9,7 @@ from .models.openai_client import AsyncOpenAIVisionClient
 from .models.prompts import POSTER_EVALUATION_PROMPT
 from .models.poster_data import (
     PosterEvaluation, ProcessingLog, EvaluationJob, 
-    EvaluationMode, ProcessingStatus
+    ProcessingStatus
 )
 
 class AsyncPosterEvaluator:
@@ -25,7 +25,7 @@ class AsyncPosterEvaluator:
         
         self.jobs: Dict[str, EvaluationJob] = {}
     
-    def create_job(self, mode: EvaluationMode, total_files: int) -> str:
+    def create_job(self, total_files: int) -> str:
         """Create a new evaluation job"""
         job_id = str(uuid.uuid4())
         now = datetime.utcnow()
@@ -33,7 +33,6 @@ class AsyncPosterEvaluator:
         job = EvaluationJob(
             job_id=job_id,
             status=ProcessingStatus.PENDING,
-            mode=mode,
             created_at=now,
             updated_at=now,
             total_files=total_files,
@@ -53,7 +52,7 @@ class AsyncPosterEvaluator:
             self.jobs[job_id].status = status
             self.jobs[job_id].updated_at = datetime.utcnow()
     
-    async def evaluate_poster(self, image_path: Path, mode: EvaluationMode) -> Tuple[Optional[PosterEvaluation], ProcessingLog]:
+    async def evaluate_poster(self, image_path: Path) -> Tuple[Optional[PosterEvaluation], ProcessingLog]:
         """Evaluate a single poster image and return both evaluation and processing log"""
         start_time = time.time()
         processing_log = ProcessingLog(
@@ -99,8 +98,8 @@ class AsyncPosterEvaluator:
             # Create evaluation object
             evaluation = self._create_evaluation(image_path, analysis_data)
             
-            # Calculate final grade based on mode
-            evaluation.final_grade = evaluation.calculate_final_grade(mode)
+            # Calculate final grade
+            evaluation.final_grade = evaluation.calculate_final_grade()
             
             # Update processing log with success info
             processing_log.grade = evaluation.final_grade
@@ -151,8 +150,7 @@ class AsyncPosterEvaluator:
         
         return evaluation
     
-    async def evaluate_batch(self, job_id: str, image_paths: List[Path], 
-                           mode: EvaluationMode) -> List[PosterEvaluation]:
+    async def evaluate_batch(self, job_id: str, image_paths: List[Path]) -> List[PosterEvaluation]:
         """Evaluate batch of posters with job tracking"""
         self.update_job_status(job_id, ProcessingStatus.PROCESSING)
         
@@ -164,7 +162,7 @@ class AsyncPosterEvaluator:
         
         async def process_single_poster(image_path: Path):
             async with semaphore:
-                evaluation, processing_log = await self.evaluate_poster(image_path, mode)
+                evaluation, processing_log = await self.evaluate_poster(image_path)
                 
                 if evaluation:
                     results.append(evaluation)

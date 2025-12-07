@@ -18,7 +18,7 @@ def sample_poster_data():
 def mock_evaluation_response():
     """Mock evaluation response from OpenAI."""
     return {
-        "content": '{"Q1": "12345", "Q2": "Dr. Jane Smith", "Q3": "John Doe", "Q4": true, "Q5": true, "Q6": 7, "Q7": 3, "Q8": 7, "Q9": 18, "Q11": 10, "Q12": 4, "Q13": 3, "Q15": 10, "poster_summary": "Good poster", "evaluation_summary": "Nice work", "overall_opinion": "Excellent"}'
+        "content": '{"project_number": "12345", "advisor_name": "Dr. Jane Smith", "presenter_names": "John Doe", "Q1": 5, "Q2": 5, "Q3": 5, "Q4": 5, "Q5": 8, "Q6": 6, "Q7": 6, "Q8": 6, "Q9": 5, "Q10": 4, "Q11": 5, "Q12": 10, "Q13": 5, "Q14": 5, "Q15": 7, "Q16": 8, "poster_summary": "Good poster", "evaluation_summary": "Nice work", "overall_opinion": "Excellent"}'
     }
 
 class TestEndToEndWorkflow:
@@ -33,7 +33,7 @@ class TestEndToEndWorkflow:
                 
                 # Upload single poster
                 files = {"file": ("test_poster.png", io.BytesIO(sample_poster_data), "image/png")}
-                data = {"mode": "fifteen"}
+                data = {}
                 
                 response = client.post("/upload/single", files=files, data=data)
                 
@@ -61,7 +61,7 @@ class TestEndToEndWorkflow:
                     ("files", ("poster2.png", io.BytesIO(sample_poster_data), "image/png")),
                     ("files", ("poster3.png", io.BytesIO(sample_poster_data), "image/png"))
                 ]
-                data = {"mode": "seven"}
+                data = {}
                 
                 response = client.post("/upload/batch", files=files, data=data)
                 
@@ -89,7 +89,7 @@ class TestErrorHandling:
         with TestClient(app) as client:
             # Try uploading a text file
             files = {"file": ("document.txt", io.BytesIO(b"This is not an image"), "text/plain")}
-            data = {"mode": "fifteen"}
+            data = {}
             
             response = client.post("/upload/single", files=files, data=data)
             
@@ -101,7 +101,7 @@ class TestErrorHandling:
             # Create a large file (simulate by modifying headers)
             large_data = sample_poster_data * 1000  # Make it larger
             files = {"file": ("large_poster.png", io.BytesIO(large_data), "image/png")}
-            data = {"mode": "fifteen"}
+            data = {}
             
             response = client.post("/upload/single", files=files, data=data)
             
@@ -116,7 +116,7 @@ class TestErrorHandling:
                       side_effect=Exception("API Rate Limit Exceeded")):
                 
                 files = {"file": ("test_poster.png", io.BytesIO(sample_poster_data), "image/png")}
-                data = {"mode": "fifteen"}
+                data = {}
                 
                 response = client.post("/upload/single", files=files, data=data)
                 
@@ -126,23 +126,7 @@ class TestErrorHandling:
 class TestDataValidation:
     """Test data validation and sanitization."""
     
-    def test_evaluation_mode_validation(self, sample_poster_data):
-        """Test evaluation mode validation."""
-        with TestClient(app) as client:
-            files = {"file": ("test_poster.png", io.BytesIO(sample_poster_data), "image/png")}
-            
-            # Test valid modes
-            for mode in ["seven", "fifteen"]:
-                data = {"mode": mode}
-                response = client.post("/upload/single", files=files, data=data)
-                # Should not fail due to mode (other factors might cause failure)
-                assert response.status_code in [200, 422, 500]
-            
-            # Test invalid mode - might be accepted and processed with default
-            data = {"mode": "invalid_mode"}
-            response = client.post("/upload/single", files=files, data=data)
-            # Either rejected with 422 or accepted with 200 (using default)
-            assert response.status_code in [200, 422]
+
     
     def test_job_id_validation(self):
         """Test job ID validation."""

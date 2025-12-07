@@ -3,7 +3,7 @@ import asyncio
 import json
 from unittest.mock import AsyncMock, patch, MagicMock
 from src.evaluator import AsyncPosterEvaluator
-from src.models.poster_data import EvaluationMode
+from src.evaluator import AsyncPosterEvaluator
 import tempfile
 import os
 
@@ -15,19 +15,14 @@ class TestAsyncPosterEvaluator:
         """Test successful single poster evaluation."""
         evaluator = AsyncPosterEvaluator()
         sample_evaluation_response = {
-            "Q1": "12345",
-            "Q2": "Dr. Jane Smith",
-            "Q3": "John Doe",
-            "Q4": True,
-            "Q5": True,
-            "Q6": 7,
-            "Q7": 3,
-            "Q8": 7,
-            "Q9": 18,
-            "Q11": 10,
-            "Q12": 4,
-            "Q13": 3,
-            "Q15": 10,
+            "project_number": "12345",
+            "advisor_name": "Dr. Jane Smith",
+            "presenter_names": "John Doe",
+            "Q1": 5, "Q2": 5, "Q3": 5, "Q4": 5,
+            "Q5": 8, "Q6": 6, "Q7": 6,
+            "Q8": 6, "Q9": 5, "Q10": 4,
+            "Q11": 5, "Q12": 10, "Q13": 5, "Q14": 5,
+            "Q15": 7, "Q16": 8,
             "poster_summary": "Machine Learning in Healthcare poster",
             "evaluation_summary": "Excellent poster with clear methodology",
             "overall_opinion": "Strong research presentation"
@@ -45,14 +40,14 @@ class TestAsyncPosterEvaluator:
             try:
                 from pathlib import Path
                 result = await evaluator.evaluate_poster(
-                    Path(temp_file), 
-                    EvaluationMode.FIFTEEN
+                    Path(temp_file)
                 )
                 
                 evaluation_result, log = result
-                assert evaluation_result.Q1 == "12345"
-                assert evaluation_result.Q2 == "Dr. Jane Smith"
-                assert evaluation_result.Q3 == "John Doe"
+                assert evaluation_result.project_number == "12345"
+                assert evaluation_result.advisor_name == "Dr. Jane Smith"
+                assert evaluation_result.presenter_names == "John Doe"
+                assert evaluation_result.Q1 == 5
                 assert evaluation_result.poster_summary == "Machine Learning in Healthcare poster"
                 assert log.status == "ok"
                 mock_analyze.assert_called_once()
@@ -67,8 +62,7 @@ class TestAsyncPosterEvaluator:
         evaluator = AsyncPosterEvaluator()
         from pathlib import Path
         result = await evaluator.evaluate_poster(
-            Path("/nonexistent/file.png"), 
-            EvaluationMode.FIFTEEN
+            Path("/nonexistent/file.png")
         )
         evaluation_result, log = result
         # Should return None for evaluation_result and failed status for log
@@ -81,9 +75,14 @@ class TestAsyncPosterEvaluator:
         """Test successful batch evaluation."""
         evaluator = AsyncPosterEvaluator()
         sample_evaluation_response = {
-            "Q1": "12345", "Q2": "Dr. Jane Smith", "Q3": "John Doe",
-            "Q4": True, "Q5": True, "Q6": 7, "Q7": 3, "Q8": 7, "Q9": 18,
-            "Q11": 10, "Q12": 4, "Q13": 3, "Q15": 10,
+            "project_number": "12345",
+            "advisor_name": "Dr. Jane Smith",
+            "presenter_names": "John Doe",
+            "Q1": 5, "Q2": 5, "Q3": 5, "Q4": 5,
+            "Q5": 8, "Q6": 6, "Q7": 6,
+            "Q8": 6, "Q9": 5, "Q10": 4,
+            "Q11": 5, "Q12": 10, "Q13": 5, "Q14": 5,
+            "Q15": 7, "Q16": 8,
             "poster_summary": "Test poster", "evaluation_summary": "Good", "overall_opinion": "Nice"
         }
         
@@ -101,13 +100,12 @@ class TestAsyncPosterEvaluator:
             try:
                 from pathlib import Path
                 # First create a job
-                job_id = evaluator.create_job(EvaluationMode.SEVEN, len(temp_files))
+                job_id = evaluator.create_job(len(temp_files))
                 
                 # Then evaluate batch
                 results = await evaluator.evaluate_batch(
                     job_id,
-                    [Path(f) for f in temp_files], 
-                    EvaluationMode.SEVEN
+                    [Path(f) for f in temp_files]
                 )
                 
                 assert job_id is not None
@@ -130,10 +128,10 @@ class TestAsyncPosterEvaluator:
         evaluator = AsyncPosterEvaluator()
         from pathlib import Path
         # Create a job first
-        job_id = evaluator.create_job(EvaluationMode.SEVEN, 0)
+        job_id = evaluator.create_job(0)
         
         # Evaluate empty batch
-        results = await evaluator.evaluate_batch(job_id, [], EvaluationMode.SEVEN)
+        results = await evaluator.evaluate_batch(job_id, [])
         
         # Should return empty list of results
         assert len(results) == 0
@@ -146,7 +144,7 @@ class TestAsyncPosterEvaluator:
         """Test getting status of existing job."""
         evaluator = AsyncPosterEvaluator()
         # Create a real job using the create_job method
-        job_id = evaluator.create_job(EvaluationMode.SEVEN, 10)
+        job_id = evaluator.create_job(10)
         
         job = evaluator.get_job(job_id)
         
@@ -166,9 +164,14 @@ class TestAsyncPosterEvaluator:
         """Test successful single poster processing."""
         evaluator = AsyncPosterEvaluator()
         sample_evaluation_response = {
-            "Q1": "12345", "Q2": "Dr. Jane Smith", "Q3": "John Doe",
-            "Q4": True, "Q5": True, "Q6": 7, "Q7": 3, "Q8": 7, "Q9": 18,
-            "Q11": 10, "Q12": 4, "Q13": 3, "Q15": 10,
+            "project_number": "12345",
+            "advisor_name": "Dr. Jane Smith",
+            "presenter_names": "John Doe",
+            "Q1": 5, "Q2": 5, "Q3": 5, "Q4": 5,
+            "Q5": 8, "Q6": 6, "Q7": 6,
+            "Q8": 6, "Q9": 5, "Q10": 4,
+            "Q11": 5, "Q12": 10, "Q13": 5, "Q14": 5,
+            "Q15": 7, "Q16": 8,
             "poster_summary": "Machine Learning in Healthcare poster",
             "evaluation_summary": "Excellent poster with clear methodology",
             "overall_opinion": "Strong research presentation"
@@ -185,14 +188,13 @@ class TestAsyncPosterEvaluator:
             try:
                 from pathlib import Path
                 result = await evaluator.evaluate_poster(
-                    Path(temp_file), 
-                    EvaluationMode.FIFTEEN
+                    Path(temp_file)
                 )
                 
                 evaluation_result, log = result
                 assert log.file == os.path.basename(temp_file)
-                assert evaluation_result.Q1 == "12345"
-                assert evaluation_result.Q2 == "Dr. Jane Smith"
+                assert evaluation_result.project_number == "12345"
+                assert evaluation_result.advisor_name == "Dr. Jane Smith"
                 assert evaluation_result.poster_summary == "Machine Learning in Healthcare poster"
                 assert log.status == "ok"
                 
@@ -216,8 +218,7 @@ class TestAsyncPosterEvaluator:
             try:
                 from pathlib import Path
                 result = await evaluator.evaluate_poster(
-                    Path(temp_file), 
-                    EvaluationMode.FIFTEEN
+                    Path(temp_file)
                 )
                 
                 evaluation_result, log = result
@@ -236,10 +237,9 @@ class TestJobManagement:
     
     def test_create_job(self):
         """Test job creation."""
-        from src.models.poster_data import EvaluationMode
         
         evaluator = AsyncPosterEvaluator()
-        job_id = evaluator.create_job(EvaluationMode.FIFTEEN, 5)
+        job_id = evaluator.create_job(5)
         assert isinstance(job_id, str)
         assert len(job_id) > 0
         
@@ -254,7 +254,7 @@ class TestJobManagement:
         
         evaluator = AsyncPosterEvaluator()
         # Create a real job
-        job_id = evaluator.create_job(EvaluationMode.SEVEN, 10)
+        job_id = evaluator.create_job(10)
         
         # Update status to processing
         evaluator.update_job_status(job_id, ProcessingStatus.PROCESSING)

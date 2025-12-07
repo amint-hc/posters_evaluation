@@ -33,7 +33,7 @@ class TestSingleUploadEndpoint:
             mock_create_job.return_value = "job_123"
             
             files = {"file": ("test_poster.png", io.BytesIO(sample_image_data), "image/png")}
-            data = {"mode": "fifteen"}
+            data = {}
             
             response = client.post("/upload/single", files=files, data=data)
             
@@ -46,7 +46,7 @@ class TestSingleUploadEndpoint:
     def test_upload_single_invalid_file(self, client):
         """Test upload with invalid file type."""
         files = {"file": ("test.txt", io.BytesIO(b"not an image"), "text/plain")}
-        data = {"mode": "fifteen"}
+        data = {}
         
         response = client.post("/upload/single", files=files, data=data)
         
@@ -54,7 +54,7 @@ class TestSingleUploadEndpoint:
 
     def test_upload_single_no_file(self, client):
         """Test upload without file."""
-        data = {"mode": "fifteen"}
+        data = {}
         
         response = client.post("/upload/single", data=data)
         
@@ -74,7 +74,7 @@ class TestBatchUploadEndpoint:
                 ("files", ("poster1.png", io.BytesIO(sample_image_data), "image/png")),
                 ("files", ("poster2.png", io.BytesIO(sample_image_data), "image/png"))
             ]
-            data = {"mode": "seven"}
+            data = {}
             
             response = client.post("/upload/batch", files=files, data=data)
             
@@ -86,7 +86,7 @@ class TestBatchUploadEndpoint:
 
     def test_upload_batch_no_files(self, client):
         """Test batch upload without files."""
-        data = {"mode": "seven"}
+        data = {}
         
         response = client.post("/upload/batch", data=data)
         
@@ -99,7 +99,7 @@ class TestBatchUploadEndpoint:
             ("files", (f"poster{i}.png", io.BytesIO(sample_image_data), "image/png"))
             for i in range(251)
         ]
-        data = {"mode": "seven"}
+        data = {}
         
         response = client.post("/upload/batch", files=files, data=data)    
         assert response.status_code == 400
@@ -110,14 +110,13 @@ class TestJobEndpoints:
     
     def test_get_job_status_processing(self, client):
         """Test getting status of processing job."""
-        from src.models.poster_data import EvaluationJob, ProcessingStatus, EvaluationMode
+        from src.models.poster_data import EvaluationJob, ProcessingStatus
         from datetime import datetime
         
         with patch('src.evaluator.AsyncPosterEvaluator.get_job') as mock_get_job:
             mock_job = EvaluationJob(
                 job_id="job_123",
                 status=ProcessingStatus.PROCESSING,
-                mode=EvaluationMode.FIFTEEN,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 total_files=10,
@@ -133,14 +132,13 @@ class TestJobEndpoints:
 
     def test_get_job_status_completed(self, client):
         """Test getting status of completed job."""
-        from src.models.poster_data import EvaluationJob, ProcessingStatus, EvaluationMode
+        from src.models.poster_data import EvaluationJob, ProcessingStatus
         from datetime import datetime
         
         with patch('src.evaluator.AsyncPosterEvaluator.get_job') as mock_get_job:
             mock_job = EvaluationJob(
                 job_id="job_123",
                 status=ProcessingStatus.COMPLETED,
-                mode=EvaluationMode.FIFTEEN,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 total_files=5,
@@ -168,14 +166,14 @@ class TestDownloadEndpoints:
     
     def test_download_results_success(self, client):
         """Test successful file download."""
-        from src.models.poster_data import EvaluationJob, ProcessingStatus, EvaluationMode
+        from src.models.poster_data import EvaluationJob, ProcessingStatus
         from datetime import datetime
         from pathlib import Path
         
         # Create temp output directory and file
         outputs_dir = Path("outputs") / "test_job_123"
         outputs_dir.mkdir(parents=True, exist_ok=True)
-        test_file = outputs_dir / "results_master_fifteen.csv"
+        test_file = outputs_dir / "results_master.csv"
         
         try:
             test_file.write_text("title,score\nTest Poster,85\n")
@@ -184,7 +182,6 @@ class TestDownloadEndpoints:
             mock_job = EvaluationJob(
                 job_id="test_job_123",
                 status=ProcessingStatus.COMPLETED,
-                mode=EvaluationMode.FIFTEEN,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 total_files=1,

@@ -9,14 +9,14 @@ from ..models.poster_data import PosterEvaluation, ProcessingLog
 class AsyncOutputGenerator:
     """Generate all required output files asynchronously"""
     
-    def __init__(self, output_dir: Path, mode: str = "fifteen"):
+    
+    def __init__(self, output_dir: Path):
         self.output_dir = output_dir
-        self.mode = mode
         self.output_dir.mkdir(parents=True, exist_ok=True)
     
     async def generate_master_results(self, evaluations: List[PosterEvaluation]) -> Path:
         """Generate master CSV results file"""
-        filename = f"results_master_{self.mode}.csv"
+        filename = f"results_master.csv"
         filepath = self.output_dir / filename
         
         # Prepare data for CSV
@@ -25,7 +25,7 @@ class AsyncOutputGenerator:
             data.append({
                 "Poster File": eval.poster_file,
                 "Final Grade": eval.final_grade,
-                "Project Number": eval.Q1 if eval.Q1 else "",
+                "Project Number": eval.project_number if eval.project_number else "",
                 "Project Summary": eval.poster_summary,
                 "Evaluation Summary": eval.evaluation_summary
             })
@@ -47,15 +47,17 @@ class AsyncOutputGenerator:
         
         async def write_breakdown_file(eval: PosterEvaluation):
             # Determine filename
-            if eval.Q1 and eval.Q3:  # Project number and presenter found
-                filename = f"{eval.Q1}_{eval.Q3}.json"
+            if eval.project_number and eval.presenter_names:  # Project number and presenter found
+                filename = f"{eval.project_number}_{eval.presenter_names}.json"
+            elif eval.project_number:
+                filename = f"{eval.project_number}.json"
             else:
                 # Fallback naming
                 stem = Path(eval.poster_file).stem
                 filename = f"{stem}_Unknown.json"
             
             # Clean filename (remove invalid characters)
-            filename = "".join(c for c in filename if c.isalnum() or c in "._-")
+            filename = "".join(c for c in filename if c.isalnum() or c in "._- ")
             filepath = self.output_dir / filename
             
             # Create JSON data
