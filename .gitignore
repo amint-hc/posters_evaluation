@@ -59,3 +59,10 @@ htmlcov/
 
 # Docker
 .dockerignore
+
+# Posters
+posters/
+
+# Cache
+.cache
+

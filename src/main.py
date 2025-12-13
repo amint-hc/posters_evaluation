@@ -5,18 +5,15 @@ from typing import List
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
 from .evaluator import get_evaluator
 from .processors.output_generator import AsyncOutputGenerator
 from .models.poster_data import (
     EvaluationResponse,
     BatchUploadResponse, 
-    EvaluationJob, ProcessingStatus
+    ProcessingStatus,
+    EvaluationJob
 )
-
-# Load environment variables
-load_dotenv()
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -27,10 +24,14 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# Server configuration is now in run.py
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+MAX_FILES_PER_BATCH = int(os.getenv("MAX_FILES_PER_BATCH", "250"))
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,7 +41,6 @@ app.add_middleware(
 UPLOAD_DIR = Path("uploads")
 OUTPUT_DIR = Path("outputs")
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
-MAX_BATCH_SIZE = 250  # Maximum number of files in batch upload
 
 # Ensure directories exist
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -146,9 +146,8 @@ async def upload_batch_posters(
     ),
 ):
     """Upload and evaluate multiple posters. Allows selecting multiple files at once."""
-
-    if len(files) > 250:  # Reasonable limit
-        raise HTTPException(status_code=400, detail="Too many files. Maximum 250 files per batch.")
+    if len(files) > MAX_FILES_PER_BATCH:
+        raise HTTPException(status_code=400, detail=f"Too many files. Maximum {MAX_FILES_PER_BATCH} files per batch.")
 
     # Validate files
     valid_files = []
@@ -325,7 +324,3 @@ async def health_check():
         
     except Exception as e:
         return {"status": "unhealthy", "error": str(e)}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

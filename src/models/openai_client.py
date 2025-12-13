@@ -29,8 +29,9 @@ class AsyncOpenAIVisionClient:
         self.client = AsyncOpenAI(api_key=api_key)
         self.model = os.getenv("OPENAI_MODEL", "gpt-5.1")
         self.max_completion_tokens = int(os.getenv("MAX_COMPLETION_TOKENS", "4096"))
-        self.temperature = float(os.getenv("TEMPERATURE", "0.1"))
-        self.timeout = int(os.getenv("TIMEOUT_SECONDS", "30"))
+        self.temperature = float(os.getenv("TEMPERATURE", "0.0"))
+        self.seed = int(os.getenv("OPENAI_SEED", "42"))
+        self.timeout = int(os.getenv("TIMEOUT_SECONDS", "120"))
     
     async def encode_image(self, image_path: Path) -> str:
         """Encode image to base64 for API"""
@@ -61,7 +62,8 @@ class AsyncOpenAIVisionClient:
                         }
                     ],
                     max_completion_tokens=self.max_completion_tokens,
-                    temperature=self.temperature
+                    temperature=self.temperature,
+                    seed=self.seed
                 ),
                 timeout=self.timeout
             )
