@@ -103,6 +103,36 @@ async def root():
     """Health check endpoint"""
     return {"message": "Poster Evaluation API is running", "status": "healthy"}
 
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Detailed health check"""
+    try:
+        # Check OpenAI API key
+        api_key = os.getenv("OPENAI_API_KEY")
+        api_key_status = "configured" if api_key and api_key != "your_openai_api_key_here" else "missing"
+        
+        # Check directories
+        upload_dir_status = "accessible" if UPLOAD_DIR.exists() else "missing"
+        output_dir_status = "accessible" if OUTPUT_DIR.exists() else "missing"
+        
+        # Try to get active jobs count, but don't fail if evaluator can't be created
+        try:
+            active_jobs = len(get_evaluator().jobs)
+        except ValueError:
+            # API key not configured properly
+            active_jobs = 0
+        
+        return {
+            "status": "healthy",
+            "api_key": api_key_status,
+            "upload_directory": upload_dir_status,
+            "output_directory": output_dir_status,
+            "active_jobs": active_jobs
+        }
+        
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}
+
 @app.post("/upload/single", response_model=EvaluationResponse, tags=["Evaluation"])
 async def upload_single_poster(
     background_tasks: BackgroundTasks,
@@ -192,6 +222,32 @@ async def get_job_status(job_id: str):
     
     return job
 
+@app.delete("/jobs/{job_id}", tags=["Jobs"])
+async def delete_job(job_id: str):
+    """Delete job and associated files"""
+    job = get_evaluator().get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    try:
+        # Remove uploaded files
+        upload_dir = UPLOAD_DIR / job_id
+        if upload_dir.exists():
+            shutil.rmtree(upload_dir)
+        
+        # Remove output files
+        output_dir = OUTPUT_DIR / job_id
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+        
+        # Remove job from memory
+        del get_evaluator().jobs[job_id]
+        
+        return {"message": "Job deleted successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete job: {str(e)}")
+
 @app.get("/jobs/{job_id}/results", tags=["Results"])
 async def get_job_results(job_id: str):
     """Get job evaluation results"""
@@ -268,59 +324,3 @@ async def download_breakdown_file(job_id: str, filename: str):
         filename=filename,
         media_type="application/json"
     )
-
-@app.delete("/jobs/{job_id}", tags=["Jobs"])
-async def delete_job(job_id: str):
-    """Delete job and associated files"""
-    job = get_evaluator().get_job(job_id)
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-    
-    try:
-        # Remove uploaded files
-        upload_dir = UPLOAD_DIR / job_id
-        if upload_dir.exists():
-            shutil.rmtree(upload_dir)
-        
-        # Remove output files
-        output_dir = OUTPUT_DIR / job_id
-        if output_dir.exists():
-            shutil.rmtree(output_dir)
-        
-        # Remove job from memory
-        del get_evaluator().jobs[job_id]
-        
-        return {"message": "Job deleted successfully"}
-        
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to delete job: {str(e)}")
-
-@app.get("/health", tags=["Health"])
-async def health_check():
-    """Detailed health check"""
-    try:
-        # Check OpenAI API key
-        api_key = os.getenv("OPENAI_API_KEY")
-        api_key_status = "configured" if api_key and api_key != "your_openai_api_key_here" else "missing"
-        
-        # Check directories
-        upload_dir_status = "accessible" if UPLOAD_DIR.exists() else "missing"
-        output_dir_status = "accessible" if OUTPUT_DIR.exists() else "missing"
-        
-        # Try to get active jobs count, but don't fail if evaluator can't be created
-        try:
-            active_jobs = len(get_evaluator().jobs)
-        except ValueError:
-            # API key not configured properly
-            active_jobs = 0
-        
-        return {
-            "status": "healthy",
-            "api_key": api_key_status,
-            "upload_directory": upload_dir_status,
-            "output_directory": output_dir_status,
-            "active_jobs": active_jobs
-        }
-        
-    except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
