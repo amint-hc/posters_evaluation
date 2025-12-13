@@ -128,8 +128,6 @@ You are an academic poster grading expert. You have received an objective analys
 
 Your task: Assign grades to each question based on the analysis and scoring rubric below.
 
-⚠️ CRITICAL: Your goal is to match the human experts' ranking order across all posters. Scores are tools — the ranking must match the experts' order. Be strict, harsh, and comparative.
-
 For each question:
 1. Review the STRENGTHS and WEAKNESSES from the analysis
 2. Match them against the scoring criteria
@@ -250,21 +248,21 @@ Return response in this exact JSON format:
   "Q15": int, "Q16": int,
   "grade_explanation": {
     "Q1": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
-    "Q2": "...",
-    "Q3": "...",
-    "Q4": "...",
-    "Q5": "...",
-    "Q6": "...",
-    "Q7": "...",
-    "Q8": "...",
-    "Q9": "...",
-    "Q10": "...",
-    "Q11": "...",
-    "Q12": "...",
-    "Q13": "...",
-    "Q14": "...",
-    "Q15": "...",
-    "Q16": "..."
+    "Q2": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q3": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q4": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q5": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q6": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q7": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q8": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q9": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q10": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q11": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q12": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q13": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q14": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q15": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning].",
+    "Q16": "Based on the analysis, [strengths] indicate [grade level] because [reasoning]. This fits [chosen grade] better than [other options] because [comparative reasoning]."
   }
 }
 """

@@ -1,6 +1,5 @@
 import json
 from enum import Enum
-from pathlib import Path
 from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional, Literal, Union, List, Dict, Any
@@ -28,8 +27,8 @@ class PosterEvaluation(BaseModel):
     advisor_name: str = ""    # Was Q2
     presenter_names: str = "" # Was Q3
     
-    # Phase 1: Evidence-based analysis
-    question_analysis: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+    # Phase 1: Evidence-based analysis (optional, only populated by deep_analysis approach)
+    question_analysis: Optional[Dict[str, Dict[str, Any]]] = None
     
     # Category 1: Content Quality (25 points)
     Q1: Literal[0, 2, 5, 7] = 0   # Intro written well
@@ -57,8 +56,8 @@ class PosterEvaluation(BaseModel):
     Q15: Literal[0, 2, 5, 7] = 0  # Conclusions connected to results
     Q16: Literal[0, 2, 5, 8] = 0  # Results clear
     
-    # Grade explanations for all questions
-    grade_explanation: Dict[str, str] = Field(default_factory=dict)
+    # Grade explanations (optional, only populated by approaches that generate them)
+    grade_explanation: Optional[Dict[str, str]] = None
     
     # Summaries
     poster_summary: str = ""
@@ -68,6 +67,11 @@ class PosterEvaluation(BaseModel):
     # Calculated score
     final_grade: int = Field(ge=0, le=100, default=0)
     
+    def to_dict(self) -> dict:
+        """Convert evaluation to dict, excluding None fields"""
+        return self.dict(exclude_none=True)
+        
+
     def calculate_final_grade(self) -> int:
         """Calculate final grade from all question scores"""
         return (

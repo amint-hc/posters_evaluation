@@ -1,10 +1,8 @@
 import os
-import io 
 import json
 import aiofiles
 import base64
 import asyncio
-from PIL import Image
 from pathlib import Path
 from typing import Dict, Any
 from openai import AsyncOpenAI

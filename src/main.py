@@ -1,7 +1,7 @@
 import os
 import shutil
-from pathlib import Path
 from typing import List
+from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -183,7 +183,7 @@ async def upload_batch_posters(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process batch upload: {str(e)}")
 
-@app.get("/jobs/{job_id}", response_model=EvaluationJob, tags=["Jobs"])
+@app.get("/jobs/{job_id}", response_model=EvaluationJob, response_model_exclude_none=True, tags=["Jobs"])
 async def get_job_status(job_id: str):
     """Get job status and progress"""
     job = get_evaluator().get_job(job_id)
@@ -210,7 +210,7 @@ async def get_job_results(job_id: str):
         "status": job.status.value,
         "total_files": job.total_files,
         "processed_files": job.processed_files,
-        "results": [result.dict() for result in job.results],
+        "results": [result.to_dict() for result in job.results],
         "errors": job.errors,
         "download_urls": {
             "master_csv": f"/jobs/{job_id}/download/master",

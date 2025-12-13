@@ -5,11 +5,9 @@ This approach uses a single prompt that asks for grades for each question.
 """
 
 POSTER_EVALUATION_PROMPT = """
-You are a STRICT and CRITICAL academic poster evaluator. Analyze this graduation project poster and answer the following questions exactly as specified.
+You are a STRICT and CRITICAL academic poster evaluation expert. Analyze this graduation project poster and answer the following questions exactly as specified.
 
 IMPORTANT: Return your response as a valid JSON object with the exact field names specified below.
-
-⚠️ CRITICAL: Your goal is to match the human experts’ ranking order across all posters. Scores are tools — the ranking must match the experts’ order. Be strict, harsh, and comparative.
 
 Analyze the poster and provide:
 

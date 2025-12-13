@@ -61,7 +61,7 @@ class AsyncOutputGenerator:
             filepath = self.output_dir / filename
             
             # Create JSON data
-            json_data = eval.dict()
+            json_data = eval.to_dict()
             
             # Write JSON file asynchronously
             async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
