@@ -1,3 +1,9 @@
+"""
+Prompt for 'direct' evaluation approach.
+
+This approach uses a single prompt that asks for grades for each question.
+"""
+
 POSTER_EVALUATION_PROMPT = """
 You are a STRICT and CRITICAL academic poster evaluator. Analyze this graduation project poster and answer the following questions exactly as specified.
 

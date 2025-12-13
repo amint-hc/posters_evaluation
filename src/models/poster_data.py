@@ -1,9 +1,9 @@
 import json
-from pydantic import BaseModel, Field
-from typing import Optional, Literal, Union, List
+from enum import Enum
 from pathlib import Path
 from datetime import datetime
-from enum import Enum
+from pydantic import BaseModel, Field
+from typing import Optional, Literal, Union, List, Dict, Any
 
 
 class ProcessingStatus(str, Enum):
@@ -27,6 +27,9 @@ class PosterEvaluation(BaseModel):
     project_number: str = ""  # Was Q1
     advisor_name: str = ""    # Was Q2
     presenter_names: str = "" # Was Q3
+    
+    # Phase 1: Evidence-based analysis
+    question_analysis: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     
     # Category 1: Content Quality (25 points)
     Q1: Literal[0, 2, 5, 7] = 0   # Intro written well
@@ -53,6 +56,9 @@ class PosterEvaluation(BaseModel):
     # Category 5: Results & Conclusions (15 points)
     Q15: Literal[0, 2, 5, 7] = 0  # Conclusions connected to results
     Q16: Literal[0, 2, 5, 8] = 0  # Results clear
+    
+    # Grade explanations for all questions
+    grade_explanation: Dict[str, str] = Field(default_factory=dict)
     
     # Summaries
     poster_summary: str = ""

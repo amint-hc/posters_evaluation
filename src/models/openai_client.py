@@ -1,12 +1,13 @@
-import base64
 import os
+import io 
+import json
+import aiofiles
+import base64
 import asyncio
+from PIL import Image
 from pathlib import Path
 from typing import Dict, Any
-import aiofiles
 from openai import AsyncOpenAI
-from PIL import Image
-import io
 
 class AsyncOpenAIVisionClient:
     """Async OpenAI GPT-4 Vision client for poster analysis"""
@@ -28,10 +29,11 @@ class AsyncOpenAIVisionClient:
         
         self.client = AsyncOpenAI(api_key=api_key)
         self.model = os.getenv("OPENAI_MODEL", "gpt-5.1")
-        self.max_completion_tokens = int(os.getenv("MAX_COMPLETION_TOKENS", "4096"))
+        self.max_completion_tokens = int(os.getenv("MAX_COMPLETION_TOKENS", "16384"))
         self.temperature = float(os.getenv("TEMPERATURE", "0.0"))
         self.seed = int(os.getenv("OPENAI_SEED", "42"))
-        self.timeout = int(os.getenv("TIMEOUT_SECONDS", "120"))
+        self.timeout = int(os.getenv("TIMEOUT_SECONDS", "180"))
+        self.evaluation_approach = os.getenv("EVALUATION_APPROACH", "direct").lower()
     
     async def encode_image(self, image_path: Path) -> str:
         """Encode image to base64 for API"""
@@ -70,7 +72,6 @@ class AsyncOpenAIVisionClient:
             
             # Debug logging
             content = response.choices[0].message.content
-            print(f"OpenAI API response status: {response.model}")
             print(f"OpenAI API response content length: {len(content) if content else 0}")
             print(f"OpenAI API response content preview: {content[:100] if content else 'None'}...")
             
@@ -90,3 +91,53 @@ class AsyncOpenAIVisionClient:
                 raise Exception("OpenAI API rate limit exceeded. Please try again later.")
             else:
                 raise Exception(f"OpenAI API error: {error_msg}")
+
+    async def analyze_with_context(self, image_path: Path, prompt: str, context: dict) -> Dict[str, Any]:
+        """Analyze image with additional context from Phase 1"""
+        try:
+            base64_image = await self.encode_image(image_path)
+            
+            # Format context as readable text
+            context_str = json.dumps(context, indent=2)
+            
+            response = await asyncio.wait_for(
+                self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": prompt
+                        },
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text", 
+                                    "text": f"Here is the detailed analysis of the poster. Use this to assign grades according to the rubric:\n\n{context_str}"
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/jpeg;base64,{base64_image}"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    max_completion_tokens=self.max_completion_tokens,
+                    temperature=self.temperature,
+                    seed=self.seed
+                ),
+                timeout=self.timeout
+            )
+            
+            content = response.choices[0].message.content
+            return {
+                "content": content,
+                "usage": response.usage.dict() if response.usage else None
+            }
+            
+        except asyncio.TimeoutError:
+            raise Exception(f"OpenAI API timeout after {self.timeout} seconds")
+        except Exception as e:
+            raise Exception(f"OpenAI API error in Phase 2: {str(e)}")

@@ -14,9 +14,11 @@ APP_HOST = os.getenv("APP_HOST", "0.0.0.0")
 APP_PORT = int(os.getenv("APP_PORT", "8000"))
 APP_RELOAD = os.getenv("APP_RELOAD", "true").lower() in ("true", "1", "yes")
 APP_LOG_LEVEL = os.getenv("APP_LOG_LEVEL", "info")
+EVALUATION_APPROACH = os.getenv("EVALUATION_APPROACH", "direct")
 
 if __name__ == "__main__":
     print(f"Starting server on {APP_HOST}:{APP_PORT}")
+    print(f"Using evaluation strategy: {EVALUATION_APPROACH}")
 
     uvicorn.run(
         "src.main:app",

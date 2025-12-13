@@ -26,7 +26,7 @@ This is a **FastAPI-based backend system** that automatically analyzes academic 
 ## Input Specifications
 
 ### Image Files
-- **Supported Formats:** `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`
+- **Supported Formats:** `.jpg`, `.jpeg`, `.png` (only these formats are accepted by the API)
 - **Input Method:** HTTP multipart file upload via REST API
 - **File Size Limit:** 20MB per file
 - **Batch Limit:** Up to 50 files per batch upload
@@ -177,21 +177,25 @@ poster-evaluation/
 ### Primary Language: Python 3.8+
 
 ### Core Dependencies
-```python
+```pip-requirements
 # FastAPI and Web Framework
-fastapi>=0.104.0           # Async web framework
-uvicorn[standard]>=0.24.0  # ASGI server
-python-multipart>=0.0.6   # File upload support
+fastapi>=0.100.0,<0.105.0
+uvicorn[standard]>=0.23.0,<0.25.0
+python-multipart>=0.0.6
 
-# AI and Image Processing  
-openai>=1.3.0              # GPT-4 Vision API
-pillow>=10.0.0             # Image processing
+# AI and Image Processing
+openai>=1.3.0,<2.0.0
+pillow>=9.0.0,<11.0.0
 
 # Data Processing
-pandas>=2.0.0              # Data manipulation
-pydantic>=2.0.0            # Data validation
-aiofiles>=23.0.0           # Async file operations
+pandas>=1.5.0,<2.1.0
+scipy>=1.9.0,<1.12.0
+openpyxl>=3.1.0
+pydantic>=1.10.0,<2.0.0
 
+# Async I/O
+aiofiles>=22.0.0,<24.0.0
+```
 # Configuration and Utilities
 python-dotenv>=1.0.0       # Environment variables
 pathlib2>=2.3.0            # Path utilities

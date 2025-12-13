@@ -3,12 +3,15 @@ import time
 import uuid
 import asyncio
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
 from datetime import datetime
+from typing import List, Dict, Optional, Tuple
+
 from .models.openai_client import AsyncOpenAIVisionClient
-from .models.prompts import POSTER_EVALUATION_PROMPT
+from .strategies import get_strategy
 from .models.poster_data import (
-    PosterEvaluation, ProcessingLog, EvaluationJob, 
+    PosterEvaluation, 
+    ProcessingLog, 
+    EvaluationJob, 
     ProcessingStatus
 )
 
@@ -53,7 +56,7 @@ class AsyncPosterEvaluator:
             self.jobs[job_id].updated_at = datetime.utcnow()
     
     async def evaluate_poster(self, image_path: Path) -> Tuple[Optional[PosterEvaluation], ProcessingLog]:
-        """Evaluate a single poster image and return both evaluation and processing log"""
+        """Evaluate a single poster image using the configured strategy"""
         start_time = time.time()
         processing_log = ProcessingLog(
             file=image_path.name,
@@ -64,39 +67,14 @@ class AsyncPosterEvaluator:
         )
         
         try:
-            # Use the same prompt for all modes
-            response = await self.client.analyze_poster(image_path, POSTER_EVALUATION_PROMPT)
+            # Get strategy based on client configuration
+            strategy = get_strategy(self.client.evaluation_approach)
             
-            # Check if response content exists and is not empty
-            if not response or "content" not in response:
-                print(f"Error: No content in response for {image_path.name}")
-                processing_log.status = "failed"
-                processing_log.error = "No content in response"
-                return None, processing_log
-
-            content = response["content"]
-            if not content or content.strip() == "":
-                print(f"Error: Empty content in response for {image_path.name}")
-                processing_log.status = "failed"
-                processing_log.error = "Empty content in response"
-                return None, processing_log
-
-            print(f"Raw response content for {image_path.name}: {content[:200]}...")
-            
-            # Clean the content - extract JSON from markdown code blocks if present
-            cleaned_content = self._extract_json_from_content(content)
-            
-            # Parse JSON response
-            try:
-                analysis_data = json.loads(cleaned_content)
-            except json.JSONDecodeError as json_err:
-                print(f"JSON parsing error for {image_path.name}: {str(json_err)}")
-                processing_log.status = "failed"
-                processing_log.error = f"JSON parsing error: {str(json_err)}"
-                return None, processing_log
+            # Execute strategy
+            data = await strategy.evaluate(self.client, image_path)
             
             # Create evaluation object
-            evaluation = self._create_evaluation(image_path, analysis_data)
+            evaluation = self._create_evaluation(image_path, data)
             
             # Calculate final grade
             evaluation.final_grade = evaluation.calculate_final_grade()
@@ -109,35 +87,12 @@ class AsyncPosterEvaluator:
             
         except Exception as e:
             print(f"Error evaluating {image_path.name}: {str(e)}")
+            import traceback
+            traceback.print_exc()
             # Update processing log with error info
             processing_log.status = "failed"
             processing_log.error = "timeout" if "timeout" in str(e).lower() else str(e)
             return None, processing_log
-    
-    def _extract_json_from_content(self, content: str) -> str:
-        """Extract JSON from content that may be wrapped in markdown code blocks"""
-        import re
-        
-        # First, try to find JSON within markdown code blocks
-        json_pattern = r'```(?:json)?\s*(\{.*?\})\s*```'
-        match = re.search(json_pattern, content, re.DOTALL)
-        
-        if match:
-            return match.group(1).strip()
-        
-        # If no markdown blocks found, try basic cleaning
-        cleaned = content.strip()
-        
-        # Remove any leading/trailing markdown markers
-        if cleaned.startswith('```json'):
-            cleaned = cleaned[7:]
-        elif cleaned.startswith('```'):
-            cleaned = cleaned[3:]
-        
-        if cleaned.endswith('```'):
-            cleaned = cleaned[:-3]
-        
-        return cleaned.strip()
     
     def _create_evaluation(self, image_path: Path, data: Dict) -> PosterEvaluation:
         """Create PosterEvaluation from API response"""

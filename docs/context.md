@@ -55,38 +55,39 @@ uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
 ## 2. Core Dependencies Installation
 
 ### requirements.txt
-```python
+```pip-requirements
 # FastAPI Core
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
+fastapi>=0.100.0,<0.105.0
+uvicorn[standard]>=0.23.0,<0.25.0
 python-multipart>=0.0.6
 
 # AI/ML Core
-openai>=1.3.0
-pillow>=10.0.0
+openai>=1.3.0,<2.0.0
+pillow>=9.0.0,<11.0.0
 
 # Data Processing
-pandas>=2.0.0
+pandas>=1.5.0,<2.1.0
+scipy>=1.9.0,<1.12.0
 openpyxl>=3.1.0
-pydantic>=2.0.0
+pydantic>=1.10.0,<2.0.0
 
-# Background Tasks & Async
-celery>=5.3.0
-redis>=5.0.0
-aiofiles>=23.0.0
+# Async I/O
+aiofiles>=22.0.0,<24.0.0
 
 # Configuration & Utilities
 python-dotenv>=1.0.0
 pathlib2>=2.3.0
 typing-extensions>=4.0.0
 
-# Development
+# Development & Testing
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
-httpx>=0.25.0  # For testing FastAPI
-black>=23.0.0
-flake8>=6.0.0
-mypy>=1.0.0
+httpx>=0.25.0
+pytest-mock>=3.12.0
+coverage>=7.3.0
+black>=22.0.0
+flake8>=4.0.0,<6.0.0
+mypy>=0.991
 ```
 
 ---
@@ -1026,10 +1027,10 @@ Key configuration aspects:
    - Model selection (GPT-4 Vision)
    - Request parameters (tokens, temperature)
 
-2. **File Processing:**
-   - Supported formats: JPG, JPEG, PNG
-   - File size limits
-   - Batch processing limits
+3. **File Processing:**
+    - Supported formats: JPG, JPEG, PNG (only these formats are accepted by the API)
+    - File size limits
+    - Batch processing limits
 
 3. **Evaluation Modes:**
    - FIFTEEN mode: Full evaluation with presence and coherence scores
