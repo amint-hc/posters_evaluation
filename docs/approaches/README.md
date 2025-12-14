@@ -17,6 +17,22 @@ All three approaches use the same GPT model characteristics (the same model fami
 - Common model settings (for example: temperature, max tokens, top-p, presence/penalty settings, and system-level instructions) are consistent across approaches.
 - Differences between the approaches are achieved via prompt design, instruction framing, and post-processing logic — not by switching the model itself.
 
+Batch evaluation results comparison
+---------------------------------
+Summary table: expert rank and approach ranks (format: rank (grade)).
+
+| Number      | Expert | Direct | Reasoning | Deep Analysis |
+| ----------- | ------ | ------ | --------- | ------------- |
+| 24-1-1-3040 | 1      | 6 (81) | 6 (81)    | 9 (65)        |
+| 24-1-1-3021 | 2      | 9 (77) | 9 (77)    | 4 (70)        |
+| 24-1-1-3154 | 3      | 7 (81) | 7 (81)    | 7 (69)        |
+| 23-2-2-2581 | 4      | 4 (81) | 2 (83)    | 1 (73)        |
+| 24-1-1-3020 | 5      | 2 (83) | 5 (81)    | 8 (67)        |
+| 23-2-1-2981 | 6      | 5 (81) | 4 (81)    | 5 (69)        |
+| 24-1-1-3033 | 7      | 8 (79) | 8 (79)    | 6 (69)        |
+| 24-1-1-3052 | 8      | 1 (87) | 1 (85)    | 2 (72)        |
+| 24-1-2-3136 | -      | 3 (83) | 3 (83)    | 3 (71)        |
+
 # Questions for experts
 
 Please review the following questions and provide guidance from an expert evaluator's perspective.

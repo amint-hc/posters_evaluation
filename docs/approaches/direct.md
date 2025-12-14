@@ -4,11 +4,9 @@ This approach uses only the questions to evaluate the poster.
 ### Prompt
 ```python
 POSTER_EVALUATION_PROMPT = """
-You are a STRICT and CRITICAL academic poster evaluator. Analyze this graduation project poster and answer the following questions exactly as specified.
+You are a STRICT and CRITICAL academic poster evaluation expert. Analyze this graduation project poster and answer the following questions exactly as specified.
 
 IMPORTANT: Return your response as a valid JSON object with the exact field names specified below.
-
-⚠️ CRITICAL: Your goal is to match the human experts’ ranking order across all posters. Scores are tools — the ranking must match the experts’ order. Be strict, harsh, and comparative.
 
 Analyze the poster and provide:
 
@@ -91,16 +89,16 @@ Return response in this exact JSON format:
 
 - The poster that is being evaluated is: **23-2-2-2581**. The poster file is: [2581-1.jpg](../posters/2581-1.jpg)
 
-- The poster evaluation final grade is: **83**
+- The poster evaluation final grade is: **81**
 
 - Here is the poster evaluation response:
 
 ```json
 {
-    "job_id": "4a0154af-8529-478f-9831-cc1d2dc54719",
+    "job_id": "a6fd344d-02aa-4373-8a17-f61596b2c2e8",
     "status": "completed",
-    "created_at": "2025-12-13T16:14:22.758788",
-    "updated_at": "2025-12-13T16:14:35.490898",
+    "created_at": "2025-12-13T23:24:37.271737",
+    "updated_at": "2025-12-13T23:24:49.937512",
     "total_files": 1,
     "processed_files": 1,
     "results": [
@@ -121,14 +119,14 @@ Return response in this exact JSON format:
             "Q10": 3,
             "Q11": 5,
             "Q12": 7,
-            "Q13": 5,
+            "Q13": 3,
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops a model-based deep-learning neural network for Time of Arrival (ToA) estimation from simulated Channel Frequency Response data.\nIt uses a two-stage architecture: CIR enhancement via a generative U-Net and a coarse-to-fine ToA regression scheme.\nA wireless channel model based on the 802.11n standard is used to generate extensive training and test datasets.\nResults show substantial reductions in mean absolute error and false detection rates compared to the MUSIC algorithm, especially in low-SNR multipath scenarios.",
-            "evaluation_summary": "The poster presents a clear, well-motivated problem and a logically structured solution with solid technical understanding.\nMethodology and results are described coherently, though references are minimal and not deeply integrated.\nGraphs and visual elements are generally clear and strongly support the claims, but some figures are dense and small.\nOverall, the work is strong, but the poster could better balance text and visuals and expand its scholarly grounding.",
-            "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 83
+            "poster_summary": "The project develops a model-based deep-learning neural network for Time of Arrival (ToA) estimation from simulated Channel Frequency Response data.\nIt uses a two-stage architecture: CIR enhancement via a generative U-Net and a coarse-to-fine ToA regression pipeline.\nExtensive simulations under 802.11n-like multipath channels evaluate performance across SNR and multipath conditions.\nResults show substantially reduced MAE and false detection rates compared to the MUSIC algorithm, especially in low-SNR, high-multipath scenarios.",
+            "evaluation_summary": "The poster presents a clear, well-focused introduction and motivation tightly linked to the main topic.\nMethodology and results are generally clear, though some mathematical and architectural details are compressed.\nGraphs are relevant and supportive but somewhat dense and small, limiting readability at a distance.\nOverall, the work demonstrates strong understanding and solid evidence, with room for improved visual emphasis and reference depth.",
+            "overall_opinion": "Visual explanation is missing",
+            "final_grade": 81
         }
     ],
     "errors": [],
@@ -136,9 +134,8 @@ Return response in this exact JSON format:
         {
             "file": "2581-1.jpg",
             "status": "ok",
-            "grade": 83,
-            "duration_ms": 12694,
-            "error": null
+            "grade": 81,
+            "duration_ms": 12661
         }
     ]
 }
@@ -149,58 +146,29 @@ Return response in this exact JSON format:
 
 - All posters are in the [docs/posters](../posters) directory
 
-- The evaluation grades for all posters are as follows:
-
-| Poster Rank | File          | Number       | Final Grade |
-|-------------|---------------|--------------|-------------|
-| 1           | 2581-1.jpg    | 23-2-2-2581  | 85          |
-| 2           | 3052-1.jpg    | 24-1-1-3052  | 83          |
-| 3           | 3040-1.jpg    | 24-1-1-3040  | 81          |
-| 4           | 3136-1.jpg    | 24-1-2-3136  | 81          |
-| 5           | 3020-1.jpg    | 24-1-1-3020  | 79          |
-| 6           | 3033-1.jpg    | 24-1-1-3033  | 79          |
-| 7           | 3021-1.jpg    | 24-1-1-3021  | 77          |
-| 8           | 3154-1.jpg    | 24-1-1-3154  | 75          |
-| 9           | 2981-1.jpg    | 23-2-1-2981  | 68          |
-
+| Poster Rank | File       | Number      | Final Grade |
+| ----------- | ---------- | ----------- | ----------- |
+| 1           | 3052-1.jpg | 24-1-1-3052 | 87          |
+| 2           | 3020-1.jpg | 24-1-1-3020 | 83          |
+| 3           | 3136-1.jpg | 24-1-2-3136 | 83          |
+| 4           | 2581-1.jpg | 23-2-2-2581 | 81          |
+| 5           | 2981-1.jpg | 23-2-1-2981 | 81          |
+| 6           | 3040-1.jpg | 24-1-1-3040 | 81          |
+| 7           | 3154-1.jpg | 24-1-1-3154 | 81          |
+| 8           | 3033-1.jpg | 24-1-1-3033 | 79          |
+| 9           | 3021-1.jpg | 24-1-1-3021 | 77          |
 
 - Here is the batch evaluation response:
 
 ```json
 {
-    "job_id": "e1e93505-5825-4c7b-971e-3344e322b4d0",
+    "job_id": "16a8db78-4dbc-4def-9d80-1cc984b664a7",
     "status": "completed",
-    "created_at": "2025-12-13T16:39:52.989056",
-    "updated_at": "2025-12-13T16:40:32.585079",
+    "created_at": "2025-12-13T23:26:16.187175",
+    "updated_at": "2025-12-13T23:26:49.806717",
     "total_files": 9,
     "processed_files": 9,
     "results": [
-        {
-            "poster_file": "2581-1.jpg",
-            "project_number": "23-2-2-2581",
-            "advisor_name": "Alon Eran and Eli Arviv",
-            "presenter_names": "Danny Sinder",
-            "Q1": 7,
-            "Q2": 8,
-            "Q3": 5,
-            "Q4": 5,
-            "Q5": 8,
-            "Q6": 4,
-            "Q7": 4,
-            "Q8": 4,
-            "Q9": 5,
-            "Q10": 3,
-            "Q11": 5,
-            "Q12": 7,
-            "Q13": 5,
-            "Q14": 5,
-            "Q15": 5,
-            "Q16": 5,
-            "poster_summary": "The project develops a model-based deep-learning neural network for Time of Arrival (ToA) estimation from simulated Channel Frequency Response data.\nIt uses a two-stage architecture: CIR enhancement via a generative U-Net and a coarse-to-fine ToA regression scheme.\nA wireless channel model based on the 802.11n standard is used to generate extensive training and test datasets.\nResults show substantial reductions in mean absolute error and false detection rates compared to the MUSIC algorithm, especially in low-SNR, high-multipath scenarios.",
-            "evaluation_summary": "The poster presents a clear, well-motivated problem and objective with tightly focused, relevant content.\nMethodology is logically described but somewhat compressed, and references are minimal for a graduation-level project.\nGraphs are informative and support the claims, though axis labels and readability could be improved.\nResults and conclusions are consistent and meaningful, but the explanation depth is moderate rather than exhaustive.",
-            "overall_opinion": "The poster visuality is good",
-            "final_grade": 85
-        },
         {
             "poster_file": "3052-1.jpg",
             "project_number": "24-1-1-3052",
@@ -211,8 +179,8 @@ Return response in this exact JSON format:
             "Q3": 5,
             "Q4": 5,
             "Q5": 8,
-            "Q6": 4,
-            "Q7": 4,
+            "Q6": 6,
+            "Q7": 6,
             "Q8": 4,
             "Q9": 3,
             "Q10": 3,
@@ -222,36 +190,36 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops a computer-vision-based navigation system for an autonomous surface vessel using ROS2 and a ZED stereo camera. A custom-trained YOLO model detects buoys, balls, and docking shapes, feeding a navigation logic module that generates steering commands. The system includes a GUI and server backend for task control and monitoring. Performance is evaluated via a confusion matrix and metrics such as mAP, precision, and recall, demonstrating high detection accuracy.",
-            "evaluation_summary": "Content is clear, focused, and shows strong understanding of autonomous navigation and perception. Methodology and architecture are described reasonably well, though some implementation details are glossed over. Visuals and graphs are generally effective but somewhat dense and could be clearer. Results are well presented and mostly support the conclusions, but interpretation depth is limited.",
-            "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 83
+            "poster_summary": "The project develops a computer-vision-based navigation system for an autonomous surface vessel using only image data. A custom-trained AI model detects buoys, balls, and docking shapes, feeding a ROS2-based navigation logic. The system includes a GUI and server backend for task control and monitoring. Results show high detection accuracy and reliable autonomous path following and docking.",
+            "evaluation_summary": "The poster presents a clear, well-focused introduction tightly linked to the main topic and motivation. Methodology and system architecture are described with solid technical depth, though visuals could be more legible. Results and conclusions are coherent and supported but not extensively analyzed. Overall, the work reflects strong understanding and well-structured content with room for improved graphical clarity.",
+            "overall_opinion": "Visual explanation is missing",
+            "final_grade": 87
         },
         {
-            "poster_file": "3040-1.jpg",
-            "project_number": "24-1-1-3040",
-            "advisor_name": "Yaakov Milstain",
-            "presenter_names": "Jonathan Peled and Binat Makhlin",
+            "poster_file": "3020-1.jpg",
+            "project_number": "24-1-1-3020",
+            "advisor_name": "Khen Cohen",
+            "presenter_names": "Almog Ben Zur and Rotem Marinov",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
             "Q4": 5,
             "Q5": 8,
-            "Q6": 4,
-            "Q7": 4,
+            "Q6": 0,
+            "Q7": 6,
             "Q8": 4,
-            "Q9": 3,
+            "Q9": 5,
             "Q10": 3,
             "Q11": 5,
             "Q12": 7,
-            "Q13": 3,
+            "Q13": 5,
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project presents SPEAR, a custom ASIC accelerator implementing a single perceptron neuron in TSMC28 technology. It targets high-efficiency, low-power inference as an alternative to software/FPGA solutions. The poster details system architecture, design flow from RTL to tape-out, and functional verification results. Physical design metrics and prospective scaling to larger neural networks are also discussed.",
-            "evaluation_summary": "The introduction, objectives, and motivation are very clear and tightly aligned with the main topic. Methodology and architecture are described well but not exhaustively, and references are minimal. Visuals and graphs are moderately clear yet somewhat dense, with heavy reliance on text. Results and conclusions are coherent and supported, though interpretation depth could be improved.",
+            "poster_summary": "The project develops a real-time telescope tracking system to follow a moving drone, aimed at enabling stable long-distance optical links. A YOLO-based detector and Kalman filter estimate drone position from camera images and command a motorized telescope mount. Experiments with challenging, non-continuous drone motion evaluate robustness using distance-from-center metrics. Results show stable tracking, rapid recovery from outliers, and resilience to noise and abrupt motion.",
+            "evaluation_summary": "The introduction, motivation, and objectives are exceptionally clear and tightly aligned with the topic. Methodology and system pipeline are well explained, demonstrating strong technical understanding, though references are not visible. Visual layout is generally good, with meaningful graphs and images, but text density is high. Results and conclusions are coherent and reasonably supported, but could benefit from more quantitative detail and explicit reference linkage.",
             "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 81
+            "final_grade": 83
         },
         {
             "poster_file": "3136-1.jpg",
@@ -266,6 +234,58 @@ Return response in this exact JSON format:
             "Q6": 4,
             "Q7": 4,
             "Q8": 4,
+            "Q9": 5,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project develops an integrated navigation system using IMU, scalar magnetometer, and altimeter fused with Earth magnetic anomaly maps.\nA real-time simulator with error models and a particle filter estimates position under GPS-denied conditions.\nAn 8-shaped maneuver test evaluates trajectory, position, and velocity errors.\nResults show RMS position errors within ±1σ bounds, indicating robust navigation performance.",
+            "evaluation_summary": "The introduction is concise, well-motivated, and tightly aligned with the project’s objectives.\nMethodology is technically sound but somewhat compressed, limiting accessibility for non-experts.\nGraphs are relevant and supportive, though axis labels and legends are small and dense.\nOverall structure is coherent, with conclusions reasonably supported by the presented results.",
+            "overall_opinion": "The poster contains too much verbal information",
+            "final_grade": 83
+        },
+        {
+            "poster_file": "2581-1.jpg",
+            "project_number": "23-2-2-2581",
+            "advisor_name": "Alon Eran, Eli Arviv",
+            "presenter_names": "Danny Sinder",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 2,
+            "Q7": 4,
+            "Q8": 4,
+            "Q9": 5,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project develops a model-based deep-learning neural network for Time of Arrival (ToA) estimation from simulated Channel Frequency Response data.\nIt uses a two-stage architecture: CIR enhancement via a generative U-Net and a coarse-to-fine ToA regression pipeline.\nA wireless channel model based on the 802.11n standard is used to generate extensive training and test datasets.\nResults show substantial reductions in mean absolute error and false detection rates compared to the MUSIC algorithm, especially in low-SNR, high-multipath scenarios.",
+            "evaluation_summary": "The poster presents a clear, well-focused introduction and motivation tightly linked to the main topic.\nMethodology and results are generally clear, though some mathematical and architectural details are only briefly sketched.\nGraphs are readable and strongly support the claims, but visual design is somewhat dense and text-heavy.\nReferences are minimal and could better reflect the breadth and recency of related work.",
+            "overall_opinion": "The poster contains too much verbal information",
+            "final_grade": 81
+        },
+        {
+            "poster_file": "2981-1.jpg",
+            "project_number": "23-2-1-2981",
+            "advisor_name": "Dr. Gabi Davidov",
+            "presenter_names": "Elad Dangur and Itamar Regev",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 4,
+            "Q7": 4,
+            "Q8": 4,
             "Q9": 3,
             "Q10": 3,
             "Q11": 5,
@@ -274,23 +294,23 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops an integrated navigation system using IMU, scalar magnetometer, and altimeter fused with Earth magnetic anomaly maps.\nA real-time simulator with error models and a particle filter estimates position in GPS-denied environments.\nAn 8-shaped maneuver test evaluates trajectory and error behavior under realistic dynamics.\nResults show RMS position errors within bounds, indicating robust navigation performance under noise.",
-            "evaluation_summary": "Introduction and motivation are very strong and tightly linked to the topic and objectives.\nMethodology is technically sound but somewhat compressed, limiting accessibility and detail.\nGraphs are relevant and readable, though labeling and visual hierarchy could be improved.\nResults and conclusions are clearly connected, but interpretation depth and discussion remain moderate.",
-            "overall_opinion": "The poster contains too much verbal information",
+            "poster_summary": "The project develops an autonomous drone tracking system for open-field environments using computer vision and path-planning algorithms. A DJI Tello drone and laptop detect a user, obstacles, and targets via YOLO-based models and HSV filtering. User tracking, obstacle segmentation, and RRT path planning generate an optimized, dynamically updated path. Simulations demonstrate real-time tracking and navigation with moving targets and obstacles.",
+            "evaluation_summary": "The poster presents a clear, well-focused introduction tightly aligned with the project’s objectives. Methodology and system architecture are described coherently, though not in exhaustive technical depth. Visuals and graphs are moderately clear but could be more legible and better annotated. Results and conclusions are consistent and reasonably supported, yet interpretation remains somewhat high-level.",
+            "overall_opinion": "Visual explanation is missing",
             "final_grade": 81
         },
         {
-            "poster_file": "3020-1.jpg",
-            "project_number": "24-1-1-3020",
-            "advisor_name": "Khen Cohen",
-            "presenter_names": "Almog Ben Zur and Rotem Marinov",
+            "poster_file": "3040-1.jpg",
+            "project_number": "24-1-1-3040",
+            "advisor_name": "Yaakov Milstein",
+            "presenter_names": "Jonathan Peled and Binat Makhlin",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
             "Q4": 5,
             "Q5": 8,
             "Q6": 0,
-            "Q7": 4,
+            "Q7": 6,
             "Q8": 4,
             "Q9": 3,
             "Q10": 3,
@@ -300,10 +320,36 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops a real-time system that enables a telescope to track a moving drone for secure long-distance communication scenarios. A YOLO-based detector and Kalman filter estimate drone position from camera images and command a motorized telescope mount. Implementation includes data collection, model training, and real-time control software. Experiments with challenging drone motion evaluate tracking accuracy and robustness using image sequences and distance-over-time graphs.",
-            "evaluation_summary": "The poster presents a very clear, well-focused introduction and maintains strong conceptual coherence throughout. Methodology and system architecture are described clearly but with limited technical depth, and there are effectively no formal references. Visuals and graphs are readable and supportive, though the layout is text-heavy and somewhat dense. Results and conclusions are well aligned and clearly explained, but more quantitative analysis would strengthen the evidence.",
-            "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 79
+            "poster_summary": "The project presents SPEAR, a custom ASIC accelerator implementing a single perceptron neuron in silicon using a full RTL-to-GDSII flow on TSMC28 technology. It details a modular architecture with MAC, control, memory, and I/O units, targeting efficient, low‑power inference. Results from functional verification and physical design show correct operation, timing closure at 1 GHz, and compact area. Future work includes tape‑out, FPGA-based post‑silicon testing, and scaling to larger neural networks.",
+            "evaluation_summary": "The poster’s introduction, objectives, and architecture are very clear, focused, and technically strong. Methodology and system description are detailed, but explicit references are missing. Visuals and graphs are generally readable and supportive, though not outstanding. Results and conclusions are coherent and well-aligned with the project goals, but interpretation depth could be expanded.",
+            "overall_opinion": "The section's explanations in the poster are clear",
+            "final_grade": 81
+        },
+        {
+            "poster_file": "3154-1.jpg",
+            "project_number": "24-1-1-3154",
+            "advisor_name": "Nadav Sholev",
+            "presenter_names": "Daniel David and Brittany Cohen",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 2,
+            "Q7": 6,
+            "Q8": 4,
+            "Q9": 3,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project develops a Stanley path-tracking controller for the TAUVER space rover using ROS2 and Nav2.\nIt implements a full simulation and hardware framework, including rover URDF, controller server, and Jetson-based motor interface.\nThe controller minimizes cross-track and heading errors to follow planned trajectories accurately.\nResults show centimeter-level tracking accuracy and stable steering behavior on challenging paths.",
+            "evaluation_summary": "The poster presents a clear, well-focused introduction and objectives tightly linked to the implementation and results.\nMethodology is detailed and technically sound, though references are minimal and not well integrated.\nGraphs are readable and relevant but could be better annotated and visually emphasized.\nOverall structure and logical flow are strong, with conclusions reasonably supported by the shown evidence.",
+            "overall_opinion": "Visual explanation is missing",
+            "final_grade": 81
         },
         {
             "poster_file": "3033-1.jpg",
@@ -326,8 +372,8 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project designs and implements SafeDLX, a tiny DLX processor with built‑in Error Detection and Correction (EDAC) for safety‑critical systems. It explores Hamming and CRC‑based EDAC algorithms with LUT and parallel‑processing optimizations. Several EDAC configurations (CORE, BOOST, TURBO, ULTRA) are implemented and compared. Results quantify trade‑offs among fault coverage, power, area, and timing.",
-            "evaluation_summary": "Content is clear, focused, and shows strong technical understanding, but there is no explicit reference list. Methodology and architecture are described reasonably well, though some implementation details are compressed. Visual layout is structured and readable, with graphs that support the conclusions but are somewhat dense. Results and conclusions are coherent and well linked, though not deeply analyzed.",
+            "poster_summary": "The project designs and implements SafeDLX, a tiny DLX processor with built‑in Error Detection and Correction (EDAC) for safety‑sensitive systems. It explores Hamming and CRC‑based EDAC algorithms, optimized via lookup tables and parallel processing. Several EDAC configurations (CORE, BOOST, TURBO, ULTRA) are compared in terms of fault coverage, power, area, and timing. Results quantify the trade‑offs between hardware cost and error‑correction strength.",
+            "evaluation_summary": "The poster presents a very clear, well‑focused introduction tightly linked to the project goal. Methodology and architecture are described coherently, though implementation details and formal references are limited. Visual layout and graphs are generally clear but somewhat dense and could use cleaner labeling. Results and conclusions are logically connected and interpreted meaningfully, with explicit discussion of design trade‑offs.",
             "overall_opinion": "The poster contains too much verbal information",
             "final_grade": 79
         },
@@ -352,128 +398,67 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project implements a free-space quantum key distribution (QKD) communication system using polarized single photons over line-of-sight optical links.\nA compact optical setup with telescope, polarizer, beam splitter, retroreflector, and polarization-sensitive camera is deployed for outdoor field tests.\nExperiments at distances between 50 and 400 meters evaluate polarization stability, beam alignment, and attenuation under real conditions.\nResults show generally stable polarization with distance-dependent variations, informing algorithms for receiver-side polarization correction.",
-            "evaluation_summary": "The introduction and objectives are exceptionally clear, tightly linked to the QKD context, and the content is focused and relevant.\nMethodology is described clearly but not in full technical depth, and references are effectively absent on the poster.\nGraphs and photos support the narrative, though labeling and visual polish are only moderate and could be improved.\nResults and conclusions are reasonably connected and clearly stated, but the evidence base is limited and somewhat qualitative.",
-            "overall_opinion": "The poster visuality is good",
+            "poster_summary": "The project implements a free-space Quantum Key Distribution (QKD) communication link using polarized single photons over line-of-sight paths. A compact optical setup with telescope, polarizer, beam expander, and retroreflector is deployed for outdoor field tests. Experiments at distances between 50 and 400 meters evaluate polarization stability and beam alignment. Results show small polarization variations over distance and time, supporting reliable QKD communication with potential correction algorithms.",
+            "evaluation_summary": "The introduction is precise, well-motivated, and tightly aligned with the project’s objectives. Methodology and system design are described clearly but with limited technical depth and no explicit reference list. Graphs and photos support the narrative, though labeling and visual integration could be stronger. Results and conclusions are coherent and supported, but the poster would benefit from more detailed quantitative analysis and explicit citations.",
+            "overall_opinion": "Visual explanation is missing",
             "final_grade": 77
-        },
-        {
-            "poster_file": "3154-1.jpg",
-            "project_number": "24-1-1-3154",
-            "advisor_name": "Nadav Sholev",
-            "presenter_names": "Daniel David and Brittany Cohen",
-            "Q1": 5,
-            "Q2": 8,
-            "Q3": 5,
-            "Q4": 5,
-            "Q5": 8,
-            "Q6": 2,
-            "Q7": 4,
-            "Q8": 4,
-            "Q9": 3,
-            "Q10": 3,
-            "Q11": 3,
-            "Q12": 7,
-            "Q13": 3,
-            "Q14": 5,
-            "Q15": 5,
-            "Q16": 5,
-            "poster_summary": "The project develops a Stanley path-tracking controller for the TAUVER space rover using ROS2 and Nav2.\nIt implements rover modeling, a ROS2 controller server, and a Jetson-based motor hardware interface.\nThe controller minimizes cross-track and heading errors to follow planned trajectories accurately.\nResults show low pose error and stable steering behavior on challenging paths.",
-            "evaluation_summary": "Content is technically strong, focused, and demonstrates solid understanding of rover control and ROS2 implementation.\nMethodology and system architecture are described clearly, though some steps are dense and text-heavy.\nGraphs are readable and relevant but could be better integrated with the narrative and labeled more explicitly.\nConclusions are supported by results, yet the poster relies heavily on text over visual explanation.",
-            "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 75
-        },
-        {
-            "poster_file": "2981-1.jpg",
-            "project_number": "23-2-1-2981",
-            "advisor_name": "Dr. Gabi Davidov",
-            "presenter_names": "Elad Dangur and Itamar Regev",
-            "Q1": 5,
-            "Q2": 8,
-            "Q3": 5,
-            "Q4": 3,
-            "Q5": 5,
-            "Q6": 2,
-            "Q7": 4,
-            "Q8": 4,
-            "Q9": 3,
-            "Q10": 3,
-            "Q11": 3,
-            "Q12": 7,
-            "Q13": 3,
-            "Q14": 3,
-            "Q15": 5,
-            "Q16": 5,
-            "poster_summary": "The project develops an autonomous drone tracking system for open-field environments using computer vision and path-planning algorithms. A DJI Tello drone and laptop detect a user wearing a red hat, identify obstacles, and compute RRT-based paths. YOLO-based models, HSV filtering, segmentation, and PID control are integrated via a GUI. Simulations demonstrate tracking, obstacle avoidance, and dynamic path updates.",
-            "evaluation_summary": "The poster presents a clear objective and reasonably structured methodology, with adequate but not deep technical detail. Visuals and graphs are readable and support the narrative, though they are somewhat crowded and lightly annotated. References are minimal and only loosely tied to specific claims. Overall, the work shows good understanding but could be more concise and analytically rigorous.",
-            "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 68
         }
     ],
     "errors": [],
     "processing_logs": [
         {
+            "file": "2581-1.jpg",
+            "status": "ok",
+            "grade": 81,
+            "duration_ms": 10825
+        },
+        {
             "file": "2981-1.jpg",
             "status": "ok",
-            "grade": 68,
-            "duration_ms": 12501,
-            "error": null
+            "grade": 81,
+            "duration_ms": 11192
         },
         {
             "file": "3020-1.jpg",
             "status": "ok",
-            "grade": 79,
-            "duration_ms": 12699,
-            "error": null
-        },
-        {
-            "file": "2581-1.jpg",
-            "status": "ok",
-            "grade": 85,
-            "duration_ms": 12826,
-            "error": null
+            "grade": 83,
+            "duration_ms": 11580
         },
         {
             "file": "3033-1.jpg",
             "status": "ok",
             "grade": 79,
-            "duration_ms": 12033,
-            "error": null
-        },
-        {
-            "file": "3040-1.jpg",
-            "status": "ok",
-            "grade": 81,
-            "duration_ms": 12767,
-            "error": null
+            "duration_ms": 10273
         },
         {
             "file": "3021-1.jpg",
             "status": "ok",
             "grade": 77,
-            "duration_ms": 14170,
-            "error": null
+            "duration_ms": 11301
+        },
+        {
+            "file": "3040-1.jpg",
+            "status": "ok",
+            "grade": 81,
+            "duration_ms": 11644
         },
         {
             "file": "3052-1.jpg",
             "status": "ok",
-            "grade": 83,
-            "duration_ms": 11302,
-            "error": null
+            "grade": 87,
+            "duration_ms": 9114
         },
         {
             "file": "3136-1.jpg",
             "status": "ok",
-            "grade": 81,
-            "duration_ms": 12331,
-            "error": null
+            "grade": 83,
+            "duration_ms": 9812
         },
         {
             "file": "3154-1.jpg",
             "status": "ok",
-            "grade": 75,
-            "duration_ms": 12804,
-            "error": null
+            "grade": 81,
+            "duration_ms": 10247
         }
     ]
 }
