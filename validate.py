@@ -20,7 +20,9 @@ def validate_file_structure():
         "src/models/__init__.py",
         "src/models/poster_data.py",
         "src/models/openai_client.py",
-        "src/models/prompts.py",
+        "src/models/prompts/direct.py",
+        "src/models/prompts/reasoning.py",
+        "src/models/prompts/deep_analysis.py",
         "src/processors/__init__.py",
         "src/processors/output_generator.py",
         "src/utils/__init__.py",
@@ -55,7 +57,9 @@ def validate_python_syntax():
         "src/evaluator.py",
         "src/models/poster_data.py",
         "src/models/openai_client.py",
-        "src/models/prompts.py",
+        "src/models/prompts/direct.py",
+        "src/models/prompts/reasoning.py",
+        "src/models/prompts/deep_analysis.py",
         "src/processors/output_generator.py",
         "src/utils/validators.py"
     ]

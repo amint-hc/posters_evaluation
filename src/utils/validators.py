@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile
 
 class PosterValidator:
     """Validation utilities for poster evaluation system"""
