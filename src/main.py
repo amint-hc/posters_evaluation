@@ -18,7 +18,7 @@ from .models.poster_data import (
 # Initialize FastAPI app
 app = FastAPI(
     title="Poster Evaluation API",
-    description="AI-powered academic poster evaluation system using GPT-4 Vision",
+    description="AI-powered academic poster evaluation system using GPT-5 Vision",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"

@@ -106,6 +106,10 @@ curl -X GET "http://localhost:8000/jobs/job_12345"
 ## 📁 Project Structure
 
 ```
+docs/                   # Documentation
+|
+|-- approaches/         # Evaluation approach details
+|-- README.md           # This quick start guide
 src/
 ├── main.py              # FastAPI application
 ├── evaluator.py         # Core evaluation engine
@@ -117,7 +121,6 @@ src/
 │   └── output_generator.py # File generation
 └── utils/
     └── validators.py    # File validation
-
 tests/                   # Test suite
 uploads/                 # Uploaded files
 outputs/                 # Generated results
@@ -135,7 +138,7 @@ Edit `.env` to customize:
 ## 📝 Evaluation Process
 
 1. **Upload** poster images (PNG, JPG, JPEG supported)
-2. **Process** with GPT-4 Vision API
+2. **Process** with GPT-5 Vision API
 3. **Evaluate** using 15-question rubric
 4. **Generate** CSV, JSON, and JSONL outputs
 5. **Download** results with detailed scores and feedback

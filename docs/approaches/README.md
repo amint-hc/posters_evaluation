@@ -1,61 +1,79 @@
-# Approaches
+# Evaluation Approaches
 
-This folder contains three different documented approaches used by the Posters Evaluation project. Each document describes a distinct prompting or reasoning strategy applied to the same underlying GPT model setup. The approaches are intentionally implemented to use the same GPT model characteristics (same base model and configuration); their differences come from how prompts and processing logic are structured.
+This folder contains documentation about different evaluation approaches used by the Posters Evaluation project. The approaches differ in reasoning methodology, not in the model or evaluation criteria. All use the same 16-question rubric and OpenAI GPT model.
 
-Files:
+## Evaluation Approaches
 
-- [`deep_analysis.md`](deep_analysis.md): A deep, multi-step analysis approach that asks the model to reason thoroughly, break problems into parts, and provide detailed justifications.
-- [`direct.md`](direct.md): A concise, direct-answer approach that prompts the model to give short, focused responses with minimal extra reasoning.
-- [`reasoning.md`](reasoning.md): An approach that emphasizes chain-of-thought or stepwise reasoning prompts to reveal the model's intermediate steps and rationale.
+### 1. **Direct Approach**
+- Single-pass evaluation with direct grading
+- Fast (~30-60 seconds), minimal processing overhead
+- Output: Scores and summaries
 
-Shared model characteristics
----------------------------
+### 2. **Reasoning Approach**
+- Single-pass with explanations for each score
+- ~40-70 seconds, transparent scoring
+- Output: Scores with detailed reasoning
 
-All three approaches use the same GPT model characteristics (the same model family and runtime configuration used by this project). In practice this means:
+### 3. **Deep Analysis Approach** (Two-Phase)
+- Phase 1: Objective evidence collection
+- Phase 2: Evidence-based grading
+- Most rigorous, ~60-120 seconds
+- Output: Evidence documentation and detailed rationale
 
-- The same underlying model/version is used for inference.
-- Common model settings (for example: temperature, max tokens, top-p, presence/penalty settings, and system-level instructions) are consistent across approaches.
-- Differences between the approaches are achieved via prompt design, instruction framing, and post-processing logic — not by switching the model itself.
+### 4. **Strict Approach**
+- Evidence-first, zero-tolerance grading
+- JSON schema validation for scores
+- Most deterministic, ~35-65 seconds
+- Output: Conservative scores validated to specification
 
-Batch evaluation results comparison
+## Shared Model Characteristics
+
+All approaches use identical configuration:
+- Model: GPT-5 or newer
+- Max Tokens: 4096
+- Temperature: 0.0 (consistency)
+- Top-p: 1.0
+- Presence Penalty: 0.0
+- Frequency Penalty: 0.0
+- Seed: 42 (reproducibility)
+- Timeout: 180 seconds
+
+Differences come from prompt design and processing logic only.
+
+## Rubric: 16-Question Framework
+
+5 categories, 100 points total:
+1. Content Quality (25 pts): Q1-Q4
+2. Research & Understanding (20 pts): Q5-Q7
+3. Visual Quality & Graphs (15 pts): Q8-Q10
+4. Structure & Logical Flow (25 pts): Q11-Q14
+5. Results & Conclusions (15 pts): Q15-Q16
+
+## Architecture
+
+- **Prompts:** Centralized in `src/models/prompts.py` with PROMPT_REGISTRY
+- **Strategies:** Implementation in `src/strategies.py`
+- **Client:** AsyncOpenAIVisionClient shared across all approaches
+
+## Configuration
+
+Set approach via environment variable or `.env`:
+```
+EVALUATION_APPROACH=reasoning  # direct, reasoning, deep_analysis, strict
+```
 ---------------------------------
-Summary table: expert rank and approach ranks (format: rank (grade)).
+Summary table: approach ranks and grades (format: rank (grade)).
 
-| Number      | Expert | Direct | Reasoning | Deep Analysis |
-| ----------- | ------ | ------ | --------- | ------------- |
-| 24-1-1-3040 | 1      | 6 (81) | 6 (81)    | 9 (65)        |
-| 24-1-1-3021 | 2      | 9 (77) | 9 (77)    | 4 (70)        |
-| 24-1-1-3154 | 3      | 7 (81) | 7 (81)    | 7 (69)        |
-| 23-2-2-2581 | 4      | 4 (81) | 2 (83)    | 1 (73)        |
-| 24-1-1-3020 | 5      | 2 (83) | 5 (81)    | 8 (67)        |
-| 23-2-1-2981 | 6      | 5 (81) | 4 (81)    | 5 (69)        |
-| 24-1-1-3033 | 7      | 8 (79) | 8 (79)    | 6 (69)        |
-| 24-1-1-3052 | 8      | 1 (87) | 1 (85)    | 2 (72)        |
-| 24-1-2-3136 | -      | 3 (83) | 3 (83)    | 3 (71)        |
-
-# Questions for experts
-
-Please review the following questions and provide guidance from an expert evaluator's perspective.
-
-1. How should we determine poster question weights? We already have a set of weights but they may need adjustment — please confirm whether the current weights are appropriate or suggest changes and rationale.
-
-2. As an expert, do you prefer a strict evaluation mode or a more flexible one? For example, do you prefer awarding high grades only when a poster clearly meets objectives, or allowing lower/higher grades to ensure posters reach a target (e.g., 60%) of question objectives?
-
-3. Are these posters ranked from best to worst? We could not reproduce the given ranking with any of our approaches. The target ranking is:
-
-    ```
-    24-1-1-3040
-    24-1-1-3021
-    24-1-1-3154
-    23-2-2-2581
-    24-1-1-3020
-    23-2-1-2981
-    24-1-1-3033
-    24-1-1-3052
-    ```
-
-4. GPT outputs vary between runs. We found it difficult to enforce deterministic grading for the same poster across repeated requests. From your expert view, is variability acceptable? If not, do you have recommended strategies (prompting, temperature/settings, voting/ensemble, post-processing rules) to make grades more stable?
-
-5. Which of the documented approaches (`deep_analysis.md`, `direct.md`, `reasoning.md`) best matches how experts evaluate posters in your experience? Please indicate which approach most closely mirrors expert practice, and why.
-
-Thank you — your answers will help refine weights, prompt design, and evaluation policies.
+| Number      | Direct  | Reasoning | Deep Analysis | Strict  |
+| ----------- | ------- | --------- | ------------- | ------- |
+| 2916        | 1 (87)  | 1 (89)    | 3 (72)        | 1 (100) |
+| 22-1-1-2908 | 2 (83)  | 2 (83)    | 10 (53)       | 11 (65) |
+| 23-1-1-2732 | 3 (81)  | 3 (81)    | 8 (57)        | 9 (78)  |
+| 22-1-1-2729 | 4 (81)  | 4 (81)    | 9 (57)        | 8 (80)  |
+| 23-1-1-2849 | 5 (81)  | 5 (81)    | 2 (72)        | 5 (84)  |
+| 23-1-1-2826 | 6 (81)  | 6 (81)    | 4 (71)        | 4 (85)  |
+| 23-1-2-2850 | 7 (81)  | 7 (81)    | 1 (73)        | 2 (98)  |
+| 23-1-1-2745 | 8 (79)  | 8 (79)    | 6 (67)        | 3 (89)  |
+| 23-1-1-2883 | 9 (79)  | 9 (79)    | 11 (52)       | 10 (78) |
+| 2902        | 10 (79) | 10 (79)   | 5 (69)        | 7 (82)  |
+| 2-8-6-2     | 11 (77) | 11 (77)   | 7 (67)        | 6 (82)  |

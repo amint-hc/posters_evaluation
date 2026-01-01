@@ -87,7 +87,7 @@ Return response in this exact JSON format:
 
 #### Single poster evaluation
 
-- The poster that is being evaluated is: **23-2-2-2581**. The poster file is: [2581-1.jpg](../posters/2581-1.jpg)
+- The poster that is being evaluated is: **22-1-1-2729**. The poster file is: [2729](../posters/2729.jpeg)
 
 - The poster evaluation final grade is: **81**
 
@@ -95,27 +95,27 @@ Return response in this exact JSON format:
 
 ```json
 {
-    "job_id": "a6fd344d-02aa-4373-8a17-f61596b2c2e8",
+    "job_id": "6efe4bfa-21a6-4e91-868e-4d4834dcd423",
     "status": "completed",
-    "created_at": "2025-12-13T23:24:37.271737",
-    "updated_at": "2025-12-13T23:24:49.937512",
+    "created_at": "2026-01-01T15:01:43.721246",
+    "updated_at": "2026-01-01T15:01:49.360229",
     "total_files": 1,
     "processed_files": 1,
     "results": [
         {
-            "poster_file": "2581-1.jpg",
-            "project_number": "23-2-2-2581",
-            "advisor_name": "Alon Eran, Eli Arviv",
-            "presenter_names": "Danny Sinder",
+            "poster_file": "2729.jpeg",
+            "project_number": "22-1-1-2729",
+            "advisor_name": "Bishara Bishara",
+            "presenter_names": "Celine Badran and Essam Ayashi",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
             "Q4": 5,
             "Q5": 8,
-            "Q6": 2,
+            "Q6": 4,
             "Q7": 4,
             "Q8": 4,
-            "Q9": 5,
+            "Q9": 3,
             "Q10": 3,
             "Q11": 5,
             "Q12": 7,
@@ -123,66 +123,69 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops a model-based deep-learning neural network for Time of Arrival (ToA) estimation from simulated Channel Frequency Response data.\nIt uses a two-stage architecture: CIR enhancement via a generative U-Net and a coarse-to-fine ToA regression pipeline.\nExtensive simulations under 802.11n-like multipath channels evaluate performance across SNR and multipath conditions.\nResults show substantially reduced MAE and false detection rates compared to the MUSIC algorithm, especially in low-SNR, high-multipath scenarios.",
-            "evaluation_summary": "The poster presents a clear, well-focused introduction and motivation tightly linked to the main topic.\nMethodology and results are generally clear, though some mathematical and architectural details are compressed.\nGraphs are relevant and supportive but somewhat dense and small, limiting readability at a distance.\nOverall, the work demonstrates strong understanding and solid evidence, with room for improved visual emphasis and reference depth.",
-            "overall_opinion": "Visual explanation is missing",
+            "poster_summary": "The project designs the electrical infrastructure for a mall with high‑voltage supply, focusing on lighting, protection, cabling, and safety in line with Israeli regulations. It addresses motivation rooted in legal compliance, safety, and proper interfacing with the national grid. Implementation covers load analysis, power‑factor correction, short‑circuit calculations, selectivity, busbar design, and panel drawings. Objectives emphasize understanding regulations and coordinating with stakeholders to meet technical and legal requirements.",
+            "evaluation_summary": "The poster presents a clear, well‑structured introduction tightly linked to the project’s objectives and motivation. Methodology and implementation steps are described in reasonable detail, though some aspects remain high‑level. Visuals and graphs are moderately clear and supportive but not exemplary in labeling and integration. Overall, the work demonstrates strong understanding and coherent results, with room for refinement in visual clarity and consistency across sections.",
+            "overall_opinion": "The poster visuality is good",
             "final_grade": 81
         }
     ],
     "errors": [],
     "processing_logs": [
         {
-            "file": "2581-1.jpg",
+            "file": "2729.jpeg",
             "status": "ok",
             "grade": 81,
-            "duration_ms": 12661
+            "duration_ms": 5636
         }
     ]
 }
 ```
 
-
 #### Batch posters evaluation
 
 - All posters are in the [docs/posters](../posters) directory
 
-| Poster Rank | File       | Number      | Final Grade |
-| ----------- | ---------- | ----------- | ----------- |
-| 1           | 3052-1.jpg | 24-1-1-3052 | 87          |
-| 2           | 3020-1.jpg | 24-1-1-3020 | 83          |
-| 3           | 3136-1.jpg | 24-1-2-3136 | 83          |
-| 4           | 2581-1.jpg | 23-2-2-2581 | 81          |
-| 5           | 2981-1.jpg | 23-2-1-2981 | 81          |
-| 6           | 3040-1.jpg | 24-1-1-3040 | 81          |
-| 7           | 3154-1.jpg | 24-1-1-3154 | 81          |
-| 8           | 3033-1.jpg | 24-1-1-3033 | 79          |
-| 9           | 3021-1.jpg | 24-1-1-3021 | 77          |
+- The evaluation grades for all posters are as follows:
+
+| Poster Rank | File      | Number      | Final Grade |
+| ----------- | --------- | ----------- | ----------- |
+| 1           | 2916.jpeg | 2916        | 87          |
+| 2           | 2908.jpeg | 22-1-1-2908 | 83          |
+| 3           | 2732.jpeg | 23-1-1-2732 | 81          |
+| 4           | 2729.jpeg | 22-1-1-2729 | 81          |
+| 5           | 2849.jpeg | 23-1-1-2849 | 81          |
+| 6           | 2826.jpeg | 23-1-1-2826 | 81          |
+| 7           | 2850.jpeg | 23-1-2-2850 | 81          |
+| 8           | 2745.jpeg | 23-1-1-2745 | 79          |
+| 9           | 2883.jpeg | 23-1-1-2883 | 79          |
+| 10          | 2902.jpeg | 2902        | 79          |
+| 11          | 2862.jpeg | 2-8-6-2     | 77          |
 
 - Here is the batch evaluation response:
 
 ```json
 {
-    "job_id": "16a8db78-4dbc-4def-9d80-1cc984b664a7",
+    "job_id": "1f8f5c07-6323-4840-b2a0-ac0ae8b9f645",
     "status": "completed",
-    "created_at": "2025-12-13T23:26:16.187175",
-    "updated_at": "2025-12-13T23:26:49.806717",
-    "total_files": 9,
-    "processed_files": 9,
+    "created_at": "2026-01-01T15:36:34.533797",
+    "updated_at": "2026-01-01T15:36:54.217428",
+    "total_files": 11,
+    "processed_files": 11,
     "results": [
         {
-            "poster_file": "3052-1.jpg",
-            "project_number": "24-1-1-3052",
-            "advisor_name": "Ofira Dabah",
-            "presenter_names": "Danel Aharon and Gad Yair Mimran",
+            "poster_file": "2916.jpeg",
+            "project_number": "2916",
+            "advisor_name": "Oren Ganon",
+            "presenter_names": "Nizar Khalaila and Mahmoud Shaheen",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
             "Q4": 5,
             "Q5": 8,
             "Q6": 6,
-            "Q7": 6,
+            "Q7": 4,
             "Q8": 4,
-            "Q9": 3,
+            "Q9": 5,
             "Q10": 3,
             "Q11": 5,
             "Q12": 7,
@@ -190,68 +193,94 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops a computer-vision-based navigation system for an autonomous surface vessel using only image data. A custom-trained AI model detects buoys, balls, and docking shapes, feeding a ROS2-based navigation logic. The system includes a GUI and server backend for task control and monitoring. Results show high detection accuracy and reliable autonomous path following and docking.",
-            "evaluation_summary": "The poster presents a clear, well-focused introduction tightly linked to the main topic and motivation. Methodology and system architecture are described with solid technical depth, though visuals could be more legible. Results and conclusions are coherent and supported but not extensively analyzed. Overall, the work reflects strong understanding and well-structured content with room for improved graphical clarity.",
-            "overall_opinion": "Visual explanation is missing",
+            "poster_summary": "The project implements the DES encryption algorithm using NVIDIA’s CUDA framework to exploit GPU parallelism.\nIt compares GPU performance against a quad-core CPU over varying input sizes and thread configurations.\nSpeedup and throughput are measured, targeting 10x improvement but achieving around 100x in execution speed.\nThe work discusses implications for cryptographic workloads and future extensions to more advanced ciphers.",
+            "evaluation_summary": "The poster presents a clear, well-structured introduction tightly linked to its main objective.\nMethodology and results are generally understandable, though implementation details are somewhat compressed.\nGraphs are relevant and supportive but suffer from small text and dense visual layout.\nOverall, the work demonstrates strong technical understanding and coherent argumentation.",
+            "overall_opinion": "The poster visuality is good",
             "final_grade": 87
         },
         {
-            "poster_file": "3020-1.jpg",
-            "project_number": "24-1-1-3020",
+            "poster_file": "2908.jpeg",
+            "project_number": "22-1-1-2908",
+            "advisor_name": "Dr. Hedva Shpizer",
+            "presenter_names": "Alon Pulvermacher and Raz Hershtik",
+            "Q1": 5,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 6,
+            "Q7": 4,
+            "Q8": 4,
+            "Q9": 5,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project develops an HDR compression algorithm for CT images inspired by the human visual system.\nIt aims to display high dynamic range CT data on standard low dynamic range screens while preserving diagnostic information.\nThe method uses a Gaussian pyramid, contrast modulation, and tone-mapping to enhance bone and soft-tissue visibility.\nResults compare original, HDR-compressed, and alternative methods such as histogram equalization and AHE.",
+            "evaluation_summary": "Content is focused, technically solid, and well connected from introduction through conclusions.\nMethodology and results are described clearly but with limited textual detail on some implementation aspects.\nGraphs and image panels are relevant and supportive, though labeling and visual hierarchy could be improved.\nOverall, the poster is coherent and informative, with a good balance between text and visuals.",
+            "overall_opinion": "The poster visuality is good",
+            "final_grade": 83
+        },
+        {
+            "poster_file": "2732.jpeg",
+            "project_number": "23-1-1-2732",
+            "advisor_name": "Mr. Bishara Bishara",
+            "presenter_names": "Tawfik Sleman and Yazeed Khalilieh",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 0,
+            "Q7": 6,
+            "Q8": 4,
+            "Q9": 3,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 5,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project designs a complete electrical power distribution system for a wood processing factory, covering low and high voltage aspects. It includes architectural and lighting planning, load determination, transformer selection, wiring, protection, and grounding. Short-circuit calculations, board distribution, and voltage drop checks are performed to ensure safety and regulatory compliance. Final circuit drawings summarize the implemented design choices.",
+            "evaluation_summary": "The poster presents a clear, well-structured introduction and motivation tightly linked to the main topic. Methodology and implementation steps are detailed and logically organized, though formal references are missing. Visuals and tables are generally readable and supportive but not of the highest graphical quality. Results and conclusions are present and reasonably connected to the evidence, but interpretation depth could be improved.",
+            "overall_opinion": "The poster visuality is good",
+            "final_grade": 81
+        },
+        {
+            "poster_file": "2729.jpeg",
+            "project_number": "22-1-1-2729",
+            "advisor_name": "Bishara Bishara",
+            "presenter_names": "Celine Badran and Essam Ayashi",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 4,
+            "Q7": 4,
+            "Q8": 4,
+            "Q9": 3,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project designs the electrical infrastructure for a mall, including lighting, protection systems, cable selection, and safeguards under Israeli regulations. It addresses compliance with the Electricity Law and safety standards. The implementation covers load calculations, power factor correction, short‑circuit analysis, selectivity, and busbar design. Results are illustrated through schematic diagrams, equipment sizing, and coordination tables.",
+            "evaluation_summary": "The poster presents a clear, well‑structured introduction tightly linked to the objectives and motivation. Methodology and implementation steps are described reasonably clearly, though some details and deeper analysis are only briefly indicated. Visuals and graphs are moderately clear and supportive but somewhat dense and text‑heavy. Overall, the work shows strong understanding and coherent content with room for improved visual emphasis and concision.",
+            "overall_opinion": "The poster contains too much verbal information",
+            "final_grade": 81
+        },
+        {
+            "poster_file": "2849.jpeg",
+            "project_number": "23-1-1-2849",
             "advisor_name": "Khen Cohen",
-            "presenter_names": "Almog Ben Zur and Rotem Marinov",
-            "Q1": 7,
-            "Q2": 8,
-            "Q3": 5,
-            "Q4": 5,
-            "Q5": 8,
-            "Q6": 0,
-            "Q7": 6,
-            "Q8": 4,
-            "Q9": 5,
-            "Q10": 3,
-            "Q11": 5,
-            "Q12": 7,
-            "Q13": 5,
-            "Q14": 5,
-            "Q15": 5,
-            "Q16": 5,
-            "poster_summary": "The project develops a real-time telescope tracking system to follow a moving drone, aimed at enabling stable long-distance optical links. A YOLO-based detector and Kalman filter estimate drone position from camera images and command a motorized telescope mount. Experiments with challenging, non-continuous drone motion evaluate robustness using distance-from-center metrics. Results show stable tracking, rapid recovery from outliers, and resilience to noise and abrupt motion.",
-            "evaluation_summary": "The introduction, motivation, and objectives are exceptionally clear and tightly aligned with the topic. Methodology and system pipeline are well explained, demonstrating strong technical understanding, though references are not visible. Visual layout is generally good, with meaningful graphs and images, but text density is high. Results and conclusions are coherent and reasonably supported, but could benefit from more quantitative detail and explicit reference linkage.",
-            "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 83
-        },
-        {
-            "poster_file": "3136-1.jpg",
-            "project_number": "24-1-2-3136",
-            "advisor_name": "Alona Cohen",
-            "presenter_names": "Keren Kudriyayvtsev",
-            "Q1": 7,
-            "Q2": 8,
-            "Q3": 5,
-            "Q4": 5,
-            "Q5": 8,
-            "Q6": 4,
-            "Q7": 4,
-            "Q8": 4,
-            "Q9": 5,
-            "Q10": 3,
-            "Q11": 5,
-            "Q12": 7,
-            "Q13": 3,
-            "Q14": 5,
-            "Q15": 5,
-            "Q16": 5,
-            "poster_summary": "The project develops an integrated navigation system using IMU, scalar magnetometer, and altimeter fused with Earth magnetic anomaly maps.\nA real-time simulator with error models and a particle filter estimates position under GPS-denied conditions.\nAn 8-shaped maneuver test evaluates trajectory, position, and velocity errors.\nResults show RMS position errors within ±1σ bounds, indicating robust navigation performance.",
-            "evaluation_summary": "The introduction is concise, well-motivated, and tightly aligned with the project’s objectives.\nMethodology is technically sound but somewhat compressed, limiting accessibility for non-experts.\nGraphs are relevant and supportive, though axis labels and legends are small and dense.\nOverall structure is coherent, with conclusions reasonably supported by the presented results.",
-            "overall_opinion": "The poster contains too much verbal information",
-            "final_grade": 83
-        },
-        {
-            "poster_file": "2581-1.jpg",
-            "project_number": "23-2-2-2581",
-            "advisor_name": "Alon Eran, Eli Arviv",
-            "presenter_names": "Danny Sinder",
+            "presenter_names": "Ahron Azarkovich and Israel Kuperman",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
@@ -268,16 +297,16 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops a model-based deep-learning neural network for Time of Arrival (ToA) estimation from simulated Channel Frequency Response data.\nIt uses a two-stage architecture: CIR enhancement via a generative U-Net and a coarse-to-fine ToA regression pipeline.\nA wireless channel model based on the 802.11n standard is used to generate extensive training and test datasets.\nResults show substantial reductions in mean absolute error and false detection rates compared to the MUSIC algorithm, especially in low-SNR, high-multipath scenarios.",
-            "evaluation_summary": "The poster presents a clear, well-focused introduction and motivation tightly linked to the main topic.\nMethodology and results are generally clear, though some mathematical and architectural details are only briefly sketched.\nGraphs are readable and strongly support the claims, but visual design is somewhat dense and text-heavy.\nReferences are minimal and could better reflect the breadth and recency of related work.",
+            "poster_summary": "The project develops an adaptive optics system for quantum key distribution and satellite tracking.\nIt uses a Shack–Hartmann wavefront sensor, deformable mirror, and PID control to correct atmospheric turbulence.\nA modal algorithm reconstructs the wavefront using Zernike polynomials and least-squares estimation.\nSimulations and lab experiments demonstrate improved RMS error and Strehl ratio after correction.",
+            "evaluation_summary": "The poster presents a clear, well-focused introduction and a logically structured narrative from problem to solution.\nTechnical understanding is strong, though the methodology description is dense and references are minimal.\nGraphs and visual comparisons effectively support the claims, but some figures are small and text-heavy.\nResults and conclusions are reasonably connected, yet explanations could be more concise and visually emphasized.",
             "overall_opinion": "The poster contains too much verbal information",
             "final_grade": 81
         },
         {
-            "poster_file": "2981-1.jpg",
-            "project_number": "23-2-1-2981",
-            "advisor_name": "Dr. Gabi Davidov",
-            "presenter_names": "Elad Dangur and Itamar Regev",
+            "poster_file": "2826.jpeg",
+            "project_number": "23-1-1-2826",
+            "advisor_name": "Khen Cohen",
+            "presenter_names": "Ofir Nissan and Natanel Nissan",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
@@ -294,49 +323,49 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops an autonomous drone tracking system for open-field environments using computer vision and path-planning algorithms. A DJI Tello drone and laptop detect a user, obstacles, and targets via YOLO-based models and HSV filtering. User tracking, obstacle segmentation, and RRT path planning generate an optimized, dynamically updated path. Simulations demonstrate real-time tracking and navigation with moving targets and obstacles.",
-            "evaluation_summary": "The poster presents a clear, well-focused introduction tightly aligned with the project’s objectives. Methodology and system architecture are described coherently, though not in exhaustive technical depth. Visuals and graphs are moderately clear but could be more legible and better annotated. Results and conclusions are consistent and reasonably supported, yet interpretation remains somewhat high-level.",
-            "overall_opinion": "Visual explanation is missing",
+            "poster_summary": "The project develops a fast automatic method for spatial calibration of Distributed Acoustic Sensing (DAS) using camera-based tracking of vehicles above a buried fiber. An optimizer generates synthetic strain-rate maps from guessed fiber locations and aligns them with real DAS measurements. The system estimates the true fiber trajectory and demonstrates proof-of-concept accuracy on road-traffic data. It aims to generalize to various DAS applications requiring reliable fiber localization.",
+            "evaluation_summary": "The poster presents a clear, well-motivated problem and objective with strong technical understanding. Methodology and results are described coherently, though some implementation details and reference integration could be deeper. Visuals are generally effective but graphs and figures are somewhat dense and not optimally labeled. Overall, it is a strong academic poster with minor issues in visual clarity and methodological elaboration.",
+            "overall_opinion": "The poster visuality is good",
             "final_grade": 81
         },
         {
-            "poster_file": "3040-1.jpg",
-            "project_number": "24-1-1-3040",
-            "advisor_name": "Yaakov Milstein",
-            "presenter_names": "Jonathan Peled and Binat Makhlin",
-            "Q1": 7,
-            "Q2": 8,
-            "Q3": 5,
-            "Q4": 5,
-            "Q5": 8,
-            "Q6": 0,
-            "Q7": 6,
-            "Q8": 4,
-            "Q9": 3,
-            "Q10": 3,
-            "Q11": 5,
-            "Q12": 7,
-            "Q13": 5,
-            "Q14": 5,
-            "Q15": 5,
-            "Q16": 5,
-            "poster_summary": "The project presents SPEAR, a custom ASIC accelerator implementing a single perceptron neuron in silicon using a full RTL-to-GDSII flow on TSMC28 technology. It details a modular architecture with MAC, control, memory, and I/O units, targeting efficient, low‑power inference. Results from functional verification and physical design show correct operation, timing closure at 1 GHz, and compact area. Future work includes tape‑out, FPGA-based post‑silicon testing, and scaling to larger neural networks.",
-            "evaluation_summary": "The poster’s introduction, objectives, and architecture are very clear, focused, and technically strong. Methodology and system description are detailed, but explicit references are missing. Visuals and graphs are generally readable and supportive, though not outstanding. Results and conclusions are coherent and well-aligned with the project goals, but interpretation depth could be expanded.",
-            "overall_opinion": "The section's explanations in the poster are clear",
-            "final_grade": 81
-        },
-        {
-            "poster_file": "3154-1.jpg",
-            "project_number": "24-1-1-3154",
-            "advisor_name": "Nadav Sholev",
-            "presenter_names": "Daniel David and Brittany Cohen",
+            "poster_file": "2850.jpeg",
+            "project_number": "23-1-2-2850",
+            "advisor_name": "Alon Gal",
+            "presenter_names": "Nevo Genossar and Einav Zelig",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
             "Q4": 5,
             "Q5": 8,
             "Q6": 2,
-            "Q7": 6,
+            "Q7": 4,
+            "Q8": 4,
+            "Q9": 5,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project proposes a load-aware network optimization method using high-frequency switch telemetry in AI training clusters. It samples switch bandwidth, performs autocorrelation to infer training periods, and feeds parameters into an optimizer. The optimizer adjusts workload priorities and switch parameters to reduce congestion and training iteration time. Results show significant reductions in iteration periods for workloads sharing a congested switch.",
+            "evaluation_summary": "The introduction, motivation, and objectives are very clear and tightly connected to the topic. Methodology and implementation are described coherently but with limited methodological depth and only one explicit reference. Graphs are readable and relevant, and the layout is generally good though text-heavy. Results and conclusions are consistent and well explained, but the research framing and citation base are somewhat minimal.",
+            "overall_opinion": "The poster contains too much verbal information",
+            "final_grade": 81
+        },
+        {
+            "poster_file": "2745.jpeg",
+            "project_number": "23-1-1-2745",
+            "advisor_name": "Dr. Ariel Tankus",
+            "presenter_names": "Rotem Ashkenazi and Yoav Yosif Or",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 2,
+            "Q7": 4,
             "Q8": 4,
             "Q9": 3,
             "Q10": 3,
@@ -346,42 +375,68 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project develops a Stanley path-tracking controller for the TAUVER space rover using ROS2 and Nav2.\nIt implements a full simulation and hardware framework, including rover URDF, controller server, and Jetson-based motor interface.\nThe controller minimizes cross-track and heading errors to follow planned trajectories accurately.\nResults show centimeter-level tracking accuracy and stable steering behavior on challenging paths.",
-            "evaluation_summary": "The poster presents a clear, well-focused introduction and objectives tightly linked to the implementation and results.\nMethodology is detailed and technically sound, though references are minimal and not well integrated.\nGraphs are readable and relevant but could be better annotated and visually emphasized.\nOverall structure and logical flow are strong, with conclusions reasonably supported by the shown evidence.",
-            "overall_opinion": "Visual explanation is missing",
-            "final_grade": 81
-        },
-        {
-            "poster_file": "3033-1.jpg",
-            "project_number": "24-1-1-3033",
-            "advisor_name": "Oren Ganon",
-            "presenter_names": "Tamar Lutati and Shira Brodie",
-            "Q1": 7,
-            "Q2": 8,
-            "Q3": 5,
-            "Q4": 5,
-            "Q5": 8,
-            "Q6": 0,
-            "Q7": 4,
-            "Q8": 4,
-            "Q9": 3,
-            "Q10": 3,
-            "Q11": 5,
-            "Q12": 7,
-            "Q13": 5,
-            "Q14": 5,
-            "Q15": 5,
-            "Q16": 5,
-            "poster_summary": "The project designs and implements SafeDLX, a tiny DLX processor with built‑in Error Detection and Correction (EDAC) for safety‑sensitive systems. It explores Hamming and CRC‑based EDAC algorithms, optimized via lookup tables and parallel processing. Several EDAC configurations (CORE, BOOST, TURBO, ULTRA) are compared in terms of fault coverage, power, area, and timing. Results quantify the trade‑offs between hardware cost and error‑correction strength.",
-            "evaluation_summary": "The poster presents a very clear, well‑focused introduction tightly linked to the project goal. Methodology and architecture are described coherently, though implementation details and formal references are limited. Visual layout and graphs are generally clear but somewhat dense and could use cleaner labeling. Results and conclusions are logically connected and interpreted meaningfully, with explicit discussion of design trade‑offs.",
+            "poster_summary": "The project develops deep learning models to decode speech-related information from single-neuron brain activity during articulation of five phonemes.\nIt uses LSTM encoder–decoder architectures with data augmentation and hyperparameter optimization to classify neural signals.\nResults are reported for binary speech detection and five-phoneme classification with confusion matrices and performance metrics.\nThe work aims to advance brain–machine interfaces for patients with severe speech impairments.",
+            "evaluation_summary": "The poster presents a clear, well-motivated introduction tightly linked to the main objective and maintains strong topical focus.\nMethodology and implementation are described reasonably well, though references and prior-work grounding are minimal.\nGraphs are readable and relevant but visually modest, and overall layout is dense yet coherent.\nResults and conclusions are consistent and meaningful, but could benefit from deeper interpretation and clearer linkage to limitations.",
             "overall_opinion": "The poster contains too much verbal information",
             "final_grade": 79
         },
         {
-            "poster_file": "3021-1.jpg",
-            "project_number": "24-1-1-3021",
-            "advisor_name": "Khen Cohen",
-            "presenter_names": "Raz Bar-On and Amit Erez",
+            "poster_file": "2883.jpeg",
+            "project_number": "23-1-1-2883",
+            "advisor_name": "Dr. Yuval Beck",
+            "presenter_names": "Anan Alem and Kamal Rushrush",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 2,
+            "Q7": 4,
+            "Q8": 4,
+            "Q9": 3,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project designs a complete electrical system for a residential/commercial building, covering low- and high-voltage distribution. It includes architectural and lighting planning, load calculations, transformer selection, and board distribution. Protection, short‑circuit analysis, wiring methods, and circuit layouts are addressed. The work aims to ensure regulatory compliance, safety, and reliable power delivery.",
+            "evaluation_summary": "The introduction and motivation are clear, focused, and well aligned with the project scope. Methodology and implementation steps are mostly described, though references are barely visible and underdeveloped. Visuals and tables support the content but are somewhat dense and small, limiting readability. Results and conclusions are present and reasonably connected, but more explicit quantitative interpretation would strengthen them.",
+            "overall_opinion": "The poster contains too much verbal information",
+            "final_grade": 79
+        },
+        {
+            "poster_file": "2902.jpeg",
+            "project_number": "2902",
+            "advisor_name": "Prof. Yael Hanein",
+            "presenter_names": "Daniel Guiot and Ronen Rubin",
+            "Q1": 7,
+            "Q2": 8,
+            "Q3": 5,
+            "Q4": 5,
+            "Q5": 8,
+            "Q6": 2,
+            "Q7": 4,
+            "Q8": 4,
+            "Q9": 3,
+            "Q10": 3,
+            "Q11": 5,
+            "Q12": 7,
+            "Q13": 3,
+            "Q14": 5,
+            "Q15": 5,
+            "Q16": 5,
+            "poster_summary": "The project presents a system for real-time synchronous measurements of EEG/EMG using Xtrodes DAQ, dry electrodes, and a mobile phone. It focuses on ambulatory data collection during specific facial movements. Cross-correlation analyses compare stationary and ambulatory trials to assess signal reliability. The work aims to enable reliable, synchronized multi-source electrophysiological recordings for research and clinical applications.",
+            "evaluation_summary": "The poster has a clear, well-written introduction and motivation closely tied to the main topic. Methodology and results are described adequately but with limited detail on analysis and only one reference. Visuals and graphs are moderately clear yet somewhat dense, and the bibliography is minimal. Overall, the work shows strong understanding and relevance but could improve visual emphasis and reference depth.",
+            "overall_opinion": "The poster contains too much verbal information",
+            "final_grade": 79
+        },
+        {
+            "poster_file": "2862.jpeg",
+            "project_number": "2-8-6-2",
+            "advisor_name": "Mr Oren Ganon",
+            "presenter_names": "Tom Shahar and Yinon Coscas",
             "Q1": 7,
             "Q2": 8,
             "Q3": 5,
@@ -398,67 +453,79 @@ Return response in this exact JSON format:
             "Q14": 5,
             "Q15": 5,
             "Q16": 5,
-            "poster_summary": "The project implements a free-space Quantum Key Distribution (QKD) communication link using polarized single photons over line-of-sight paths. A compact optical setup with telescope, polarizer, beam expander, and retroreflector is deployed for outdoor field tests. Experiments at distances between 50 and 400 meters evaluate polarization stability and beam alignment. Results show small polarization variations over distance and time, supporting reliable QKD communication with potential correction algorithms.",
-            "evaluation_summary": "The introduction is precise, well-motivated, and tightly aligned with the project’s objectives. Methodology and system design are described clearly but with limited technical depth and no explicit reference list. Graphs and photos support the narrative, though labeling and visual integration could be stronger. Results and conclusions are coherent and supported, but the poster would benefit from more detailed quantitative analysis and explicit citations.",
-            "overall_opinion": "Visual explanation is missing",
+            "poster_summary": "The project implements the AES encryption algorithm using NVIDIA’s CUDA framework to exploit GPU parallelism.\nIt compares a baseline CPU implementation with a parallel GPU version for different data sizes.\nPerformance measurements show substantial speedup on the GPU, especially for large data sizes.\nThe work highlights the suitability of GPUs for large-scale cryptographic workloads and suggests further optimization of hardware–algorithm combinations.",
+            "evaluation_summary": "The poster presents a clear, well-structured introduction and maintains good logical flow across sections.\nMethodology and implementation are described clearly but lack citation of references and deeper technical detail.\nGraphs are readable and support the message, though visual design is only moderately polished.\nOverall, the content is focused and coherent, with conclusions reasonably supported by the presented results.",
+            "overall_opinion": "The section's explanations in the poster are clear",
             "final_grade": 77
         }
     ],
     "errors": [],
     "processing_logs": [
         {
-            "file": "2581-1.jpg",
+            "file": "2732.jpeg",
             "status": "ok",
             "grade": 81,
-            "duration_ms": 10825
+            "duration_ms": 5103
         },
         {
-            "file": "2981-1.jpg",
-            "status": "ok",
-            "grade": 81,
-            "duration_ms": 11192
-        },
-        {
-            "file": "3020-1.jpg",
-            "status": "ok",
-            "grade": 83,
-            "duration_ms": 11580
-        },
-        {
-            "file": "3033-1.jpg",
+            "file": "2745.jpeg",
             "status": "ok",
             "grade": 79,
-            "duration_ms": 10273
+            "duration_ms": 5351
         },
         {
-            "file": "3021-1.jpg",
+            "file": "2729.jpeg",
+            "status": "ok",
+            "grade": 81,
+            "duration_ms": 5468
+        },
+        {
+            "file": "2849.jpeg",
+            "status": "ok",
+            "grade": 81,
+            "duration_ms": 4938
+        },
+        {
+            "file": "2826.jpeg",
+            "status": "ok",
+            "grade": 81,
+            "duration_ms": 5238
+        },
+        {
+            "file": "2850.jpeg",
+            "status": "ok",
+            "grade": 81,
+            "duration_ms": 5816
+        },
+        {
+            "file": "2883.jpeg",
+            "status": "ok",
+            "grade": 79,
+            "duration_ms": 3965
+        },
+        {
+            "file": "2862.jpeg",
             "status": "ok",
             "grade": 77,
-            "duration_ms": 11301
+            "duration_ms": 4557
         },
         {
-            "file": "3040-1.jpg",
+            "file": "2902.jpeg",
             "status": "ok",
-            "grade": 81,
-            "duration_ms": 11644
+            "grade": 79,
+            "duration_ms": 4975
         },
         {
-            "file": "3052-1.jpg",
-            "status": "ok",
-            "grade": 87,
-            "duration_ms": 9114
-        },
-        {
-            "file": "3136-1.jpg",
+            "file": "2908.jpeg",
             "status": "ok",
             "grade": 83,
-            "duration_ms": 9812
+            "duration_ms": 4849
         },
         {
-            "file": "3154-1.jpg",
+            "file": "2916.jpeg",
             "status": "ok",
-            "grade": 81,
-            "duration_ms": 10247
+            "grade": 87,
+            "duration_ms": 4762
         }
     ]
 }

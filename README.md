@@ -5,14 +5,14 @@
 
 ## Project Overview
 
-This is a **FastAPI-based backend system** that automatically analyzes academic posters using GPT-4 Vision API and produces structured, ranked results. The system provides REST API endpoints for single and batch poster evaluation, with real-time job tracking and multiple output formats.
+This is a **FastAPI-based backend system** that automatically analyzes academic posters using GPT-5 Vision API and produces structured, ranked results. The system provides REST API endpoints for single and batch poster evaluation, with real-time job tracking and multiple output formats.
 
 ## Core Requirements
 
 ### Primary Functions
 1. **REST API Endpoints** for single and batch poster uploads
 2. **Async Processing** with job tracking and progress monitoring
-3. **AI Evaluation** using GPT-4 Vision against a 15-question rubric
+3. **AI Evaluation** using GPT-5 Vision against a 16-question rubric
 4. **Multiple Output Formats** - CSV, JSON, and JSONL results
 5. **Real-time Status Updates** for long-running batch jobs
 
@@ -32,7 +32,7 @@ This is a **FastAPI-based backend system** that automatically analyzes academic 
 - **Batch Limit:** Up to 50 files per batch upload
 
 ### Optional Features
-- **Evaluation Modes:** Seven-question vs Fifteen-question analysis
+- **Evaluation Approaches:** Four different strategies (Direct, Reasoning, Deep Analysis, Strict)
 - **Job Management:** Real-time progress tracking for batch jobs  
 - **Concurrent Processing:** Rate-limited parallel API calls
 - **Auto-cleanup:** Configurable file retention policies
@@ -89,59 +89,91 @@ This is a **FastAPI-based backend system** that automatically analyzes academic 
 {"filename":"poster2.png","status":"failed","error":"API timeout","timestamp":"2025-10-28T10:31:00Z"}
 ```
 
-## Scoring System (15-Question Rubric)
+## Scoring System (16-Question Rubric)
 
-The system evaluates posters using a comprehensive 15-question rubric covering:
+The system evaluates posters using a comprehensive 16-question rubric covering 5 categories:
 
-### Content Quality (60 points)
-- **Title and Authorship:** Clear identification and formatting
-- **Abstract Quality:** Conciseness and clarity of summary
-- **Introduction:** Problem definition and motivation
-- **Methodology:** Technical approach and implementation details
-- **Results:** Data presentation and visualization quality
-- **Conclusions:** Logical derivation from results
+### CATEGORY 1: Content Quality (25 points)
+- **Q1:** Introduction clarity and structure (0/2/5/7)
+- **Q2:** Introduction-to-topic alignment (0/2/5/8)
+- **Q3:** Objective communication clarity (0/1/3/5)
+- **Q4:** Content focus and relevance (0/1/3/5)
 
-### Presentation Quality (40 points)  
-- **Visual Design:** Layout, color scheme, and typography
-- **Content Organization:** Logical flow and structure
-- **Technical Accuracy:** Correctness of information presented
-- **Innovation Level:** Novelty and creativity of approach
-- **Audience Clarity:** Accessibility to target audience
+### CATEGORY 2: Research & Understanding (20 points)
+- **Q5:** Topic understanding and correctness (0/2/5/8)
+- **Q6:** References quality and linkage (0/2/4/6)
+- **Q7:** Methodology/implementation clarity (0/2/4/6)
+
+### CATEGORY 3: Visual Quality & Graphs (15 points)
+- **Q8:** Graph readability and labeling (0/2/4/6)
+- **Q9:** Graph relevance to claims (0/1/3/5)
+- **Q10:** Layout and visual coherence (0/2/3/4)
+
+### CATEGORY 4: Structure & Logical Flow (25 points)
+- **Q11:** Introduction-to-Motivation linkage (0/1/3/5)
+- **Q12:** Section-to-section flow (0/3/7/10)
+- **Q13:** Internal consistency (0/1/3/5)
+- **Q14:** Added value beyond introduction (0/1/3/5)
+
+### CATEGORY 5: Results & Conclusions (15 points)
+- **Q15:** Conclusion support from evidence (0/2/5/7)
+- **Q16:** Results presentation and interpretation (0/2/5/8)
 
 ### Scoring Scale
-Each question is scored on a scale appropriate to its weight:
-- **Binary questions:** 0 or maximum points
-- **Scaled questions:** Multiple score tiers (e.g., 0, 5, 8, 10)
+Each question uses evidence-based scoring with specific allowed values per question:
+- **Scores are discrete:** Only specified brackets are valid (e.g., Q1 allows 0/2/5/7 only)
 - **Final Score:** Sum of all question scores (0-100 range)
+- **Calculation:** Combines all 16 questions into a comprehensive grade
 
 ## Technical Specifications
 
 ### Architecture
 - **Framework:** FastAPI with async processing
-- **AI Model:** OpenAI GPT-4 Vision API
+- **AI Model:** OpenAI GPT-5 Vision API
 - **Database:** In-memory job tracking (Redis recommended for production)
 - **File Storage:** Local filesystem with configurable retention
 - **Containerization:** Docker with docker-compose for deployment
 
 ### API Endpoints
-- `POST /upload/single` - Single poster evaluation
-- `POST /upload/batch` - Batch poster processing  
+- `POST /upload/single` - Single poster evaluation (async)
+- `POST /upload/batch` - Batch poster processing (async)
 - `GET /jobs/{job_id}` - Job status and progress
-- `GET /jobs/{job_id}/results` - Download result files
-- `GET /health` - Service health check
+- `GET /jobs/{job_id}/results` - Get evaluation results (when complete)
+- `GET /jobs/{job_id}/download/master` - Download master CSV file
+- `GET /jobs/{job_id}/download/log` - Download processing log (JSONL)
+- `GET /jobs/{job_id}/download/breakdown/{filename}` - Download individual JSON breakdown
+- `DELETE /jobs/{job_id}` - Delete job and associated files
+- `GET /health` - Detailed health check
+- `GET /` - Root health check
 
-## Evaluation Modes
+## Evaluation Approaches
 
-### Seven-Question Mode
-- **Purpose:** Quick assessment for initial screening
-- **Output:** Basic scores and short feedback
-- **Processing Time:** ~15-30 seconds per poster
+The system supports multiple evaluation approaches, each using the same 16-question rubric but with different reasoning strategies:
 
-### Fifteen-Question Mode  
-- **Purpose:** Comprehensive evaluation with full rubric
-- **Output:** Complete question-by-question breakdown
+### Direct Approach
+- **Strategy:** Single-pass evaluation with immediate grading
+- **Output:** Scores and summaries without intermediate reasoning
 - **Processing Time:** ~30-60 seconds per poster
-- **Use Case:** Final grading and detailed feedback
+- **Use Case:** Fast, efficient evaluation
+
+### Reasoning Approach
+- **Strategy:** Single-pass evaluation with explanations for each score
+- **Output:** Scores, detailed explanations, and summaries
+- **Processing Time:** ~40-70 seconds per poster
+- **Use Case:** Understanding evaluation rationale
+
+### Deep Analysis Approach (Two-Phase)
+- **Phase 1:** Objective analysis collecting evidence without assigning scores
+- **Phase 2:** Grade assignment based on Phase 1 analysis with explanations
+- **Output:** Evidence documentation and scores with detailed rationale
+- **Processing Time:** ~60-120 seconds per poster
+- **Use Case:** Rigorous, transparent, reproducible evaluation
+
+### Strict Approach
+- **Strategy:** Strict, evidence-based scoring with zero tolerance
+- **Output:** Conservative scores constrained by JSON schema validation
+- **Processing Time:** ~35-65 seconds per poster
+- **Use Case:** Deterministic grading with minimal variability
 
 ## Current Project Structure
 
@@ -149,11 +181,12 @@ Each question is scored on a scale appropriate to its weight:
 poster-evaluation/
 ├── src/
 │   ├── main.py              # FastAPI application
-│   ├── evaluator.py         # Core evaluation engine
+│   ├── evaluator.py         # Core evaluation engine with job tracking
+│   ├── strategies.py        # Evaluation strategy implementations
 │   ├── models/
 │   │   ├── poster_data.py   # Pydantic data models
-│   │   ├── openai_client.py # GPT-4 Vision client
-│   │   └── prompts.py       # Evaluation prompts
+│   │   ├── openai_client.py # Async OpenAI Vision client (shared)
+│   │   └── prompts.py       # All evaluation prompts and JSON schemas
 │   ├── processors/
 │   │   └── output_generator.py # Async file generation
 │   └── utils/
@@ -162,10 +195,11 @@ poster-evaluation/
 │   ├── test_api.py         # API endpoint tests
 │   ├── test_evaluator.py   # Core logic tests
 │   └── test_integration.py # End-to-end tests
-├── uploads/                 # Temporary file storage
-├── outputs/                 # Generated results
+├── uploads/                 # Temporary file storage (by job_id)
+├── outputs/                 # Generated results (by job_id)
 ├── venv/                    # Virtual environment
 ├── requirements.txt         # Python dependencies
+├── pyproject.toml          # Project configuration
 ├── Dockerfile              # Container configuration
 ├── docker-compose.yml      # Service orchestration
 ├── .env.example            # Environment template
@@ -174,10 +208,10 @@ poster-evaluation/
 
 ## Technology Stack
 
-### Primary Language: Python 3.8+
+### Primary Language: Python 3.10+
 
 ### Core Dependencies
-```pip-requirements
+```
 # FastAPI and Web Framework
 fastapi>=0.100.0,<0.105.0
 uvicorn[standard]>=0.23.0,<0.25.0
@@ -195,15 +229,18 @@ pydantic>=1.10.0,<2.0.0
 
 # Async I/O
 aiofiles>=22.0.0,<24.0.0
-```
-# Configuration and Utilities
+
+# Configuration & Utilities
 python-dotenv>=1.0.0       # Environment variables
 pathlib2>=2.3.0            # Path utilities
+typing-extensions>=4.0.0   # Type hints support
 
-# Testing and Development
+# Testing & Development
 pytest>=7.0.0              # Testing framework
 pytest-asyncio>=0.21.0     # Async testing
 httpx>=0.25.0              # HTTP client for testing
+pytest-mock>=3.12.0        # Mocking for tests
+coverage>=7.3.0            # Coverage reporting
 ```
 
 ### Architecture Patterns
@@ -251,7 +288,7 @@ httpx>=0.25.0              # HTTP client for testing
 2. ✅ Single and batch poster processing
 3. ✅ Real-time job tracking and progress monitoring  
 4. ✅ Multiple output formats (CSV, JSON, JSONL)
-5. ✅ GPT-4 Vision integration with 15-question rubric
+5. ✅ GPT-5 Vision integration with 16-question rubric
 6. ✅ Comprehensive test suite and validation
 7. ✅ Docker containerization and deployment ready
 8. ✅ Production-ready error handling and logging
