@@ -47,7 +47,7 @@ Thumbs.db
 uploads/
 outputs/
 *.jpg
-*.jpeg
+# *.jpeg
 *.png
 *.pdf
 
@@ -58,9 +58,6 @@ htmlcov/
 
 # Docker
 .dockerignore
-
-# Posters
-posters/
 
 # Cache
 .cache
