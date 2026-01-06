@@ -10,7 +10,7 @@ JOBS_ENDPOINT_TEMPLATE="http://localhost:$PORT/jobs"
 OUTPUT_FILE="bin/${ID}_posters_evaluation_results.txt"
 
 # Approaches
-STRATEGIES=("strict")
+STRATEGIES=("direct" "reasoning" "deep_analysis" "strict")
 declare -A LABELS
 LABELS=( ["strict"]="Strict" ["direct"]="Direct" ["reasoning"]="Reasoning" ["deep_analysis"]="Deep Analysis" )
 
