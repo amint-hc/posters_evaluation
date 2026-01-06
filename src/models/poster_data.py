@@ -31,7 +31,7 @@ class PosterEvaluation(BaseModel):
     question_analysis: Optional[Dict[str, Dict[str, Any]]] = None
     
     # Category 1: Content Quality (25 points)
-    Q1: Literal[0, 2, 5, 7] = 0   # Intro written well
+    Q1: Literal[0, 1, 3, 5, 7] = 0   # Intro written well
     Q2: Literal[0, 2, 5, 8] = 0   # Intro relates to topic
     Q3: Literal[0, 1, 3, 5] = 0   # Purpose clear
     Q4: Literal[0, 1, 3, 5] = 0   # Content relevant

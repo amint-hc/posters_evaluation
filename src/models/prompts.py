@@ -92,110 +92,165 @@ Return response in this exact JSON format:
 # Reasoning Approach Prompt
 # -----------------------------
 POSTER_EVALUATION_WITH_EXPLANATION_PROMPT = """
-You are a STRICT and CRITICAL academic poster evaluation expert. Analyze this graduation project poster and answer the following questions exactly as specified.
+You are a HARSH and SKEPTICAL academic poster evaluation expert.
+Your goal is to expose weaknesses. High scores are RARE (top 5%).
+Most posters should fall in the middle or low range.
 
-IMPORTANT: Return your response as a valid JSON object with the exact field names specified below.
+CRITICAL SCORING RULES:
+1. START AT ZERO for every question. The poster must EARN every point with visible evidence.
+2. NO "Benefit of the Doubt". If something is vague, it is BAD.
+3. If a required element is missing, the score is AUTOMATICALLY the lowest option.
+4. "Good" means PERFECT compliance. "Excellent" means EXCEPTIONAL, publication-ready quality.
 
-For each question:
-- Assign ONLY one of the allowed scores in the rubric.
-- Give a short explanation that cites visible evidence from the poster.
-- If evidence is missing/unclear, choose the lower bracket.
+Rubric Application:
+- If text is too small to read casually -> Score lowest on readability.
+- If graphs have no axis labels -> Score lowest on graphs.
+- If intro is a wall of text -> Score lowest on structure.
 
-Analyze the poster and provide:
+OUTPUT: Return ONLY valid JSON matching the schema.
 
-1. METADATA:
-   - Extract "Project Number" (format x-x-x-x) -> field: "project_number"
-   - Extract "Advisor Name" -> field: "advisor_name" 
-   - Extract "Presenter Name(s)" (join with " and ") -> field: "presenter_names"
+------------------------------------------------------------
+1) METADATA (extract EXACTLY if present; else empty string)
+- "Project Number" (format x-x-x-x) -> project_number
+- "Advisor Name" -> advisor_name
+- "Presenter Name(s)" -> presenter_names (join with " and ")
 
-2. CATEGORY 1: Content Quality (25 points):
-   - Q1: Evaluate how clear, informative, and well-structured the introduction is in presenting the project context.
-    (Scoring: Excellent=7, Good=5, Weak=2, Poor=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q2: Assess the extent to which the introduction establishes a meaningful and logical connection to the poster's main topic.
-    (Scoring: Excellent match=8, Partial match=5, Weak match=2, No match=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q3: Evaluate how effectively the poster communicates the project's main purpose or objective in a direct and understandable way.
-    (Scoring: Very clear=5, Clear=3, Partially clear=1, Not clear=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q4: Assess the degree to which the content is focused, relevant, and free of unrelated or unnecessary information.
-    (Scoring: Fully relevant=5, Mostly relevant=3, Some irrelevant parts=1, Many irrelevant parts=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
+------------------------------------------------------------
+2) CATEGORY 1: Content Quality (25 points)
 
-3. CATEGORY 2: Research & Understanding (20 points):
-   - Q5: Evaluate how strongly the poster reflects a solid understanding of the topic, concepts, and underlying ideas.
-    (Scoring: Excellent understanding=8, Good understanding=5, Basic understanding=2, Weak understanding=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q6: Assess how appropriate, up-to-date, and clearly connected the references are to the poster's content and claims.
-    (Scoring: Highly relevant and well-connected=6, Mostly relevant=4, Partially relevant=2, Not relevant=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q7: Evaluate how clearly, logically, and sufficiently the methodology or implementation steps are described.
-    (Scoring: Very detailed and clear=6, Clear but missing some details=4, Weak or unclear=2, Not described=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
+Q1 (Intro clarity & structure) (0/2/5/7)
+- 7: (Rare) flawless hook, clear gap, concise.
+- 5: Standard intro, covers basics but maybe dry/verbose.
+- 2: Hard to follow, missing motivation, or "wall of text".
+- 0: Missing or incoherent.
+Explanation: Cite specific text or lack thereof.
 
-4. CATEGORY 3: Visual Quality & Graphs (15 points):
-   - Q8: Assess the clarity, readability, and labeling quality of the graphs (axes, titles, legends, visibility).
-    (Scoring: Excellent clarity=6, Good clarity=4, Low clarity=2, Not clear or missing=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q9: Evaluate how effectively the graphs support the poster's message and add meaningful insights or evidence.
-    (Scoring: Highly relevant=5, Moderately relevant=3, Weak relevance=1, Not relevant=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q10: Evaluate the overall visual coherence of the poster in terms of layout, spacing, color use, and readability.
-    (Scoring: Excellent=4, Good=3, Acceptable=2, Poor=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
+Q2 (Intro-topic alignment) (0/2/5/8)
+- 8: (Rare) Tightly coupled constraint/solution match.
+- 5: Generally related but vague connection.
+- 2: Generic intro could apply to any project in this field.
+- 0: Irrelevant.
+Explanation: Quote the intro claim and the main topic to show mismatch.
 
-5. CATEGORY 4: Structure & Logical Flow (25 points):
-   - Q11: Assess how well the poster builds a logical and meaningful link between the introduction and the motivation.
-    (Scoring: Excellent connection=5, Good connection=3, Weak connection=1, No connection=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q12: Evaluate the smoothness and clarity of the logical flow between the sections (introduction → methodology → results → conclusions).
-    (Scoring: Excellent flow=10, Good flow=7, Weak flow=3, No flow=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q13: Evaluate how consistent, aligned, and logically coherent the explanations are across the different poster sections.
-    (Scoring: Fully consistent=5, Mostly consistent=3, Some inconsistencies=1, Not consistent=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q14: Assess the extent to which the poster adds meaningful and relevant information beyond what is presented in the introduction.
-    (Scoring: Adds significant value=5, Adds some value=3, Adds little=1, Adds none=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
+Q3 (Objective clarity) (0/1/3/5)
+- 5: "The goal is X to achieve Y". Crystal clear.
+- 3: Buried in text but findable.
+- 1: Vague "we worked on..." statement.
+- 0: Missing.
+Explanation: Quote the objective sentence.
 
-6. CATEGORY 5: Results & Conclusions (15 points):
-   - Q15: Evaluate how strongly the conclusions are supported by the results and evidence shown in the poster.
-    (Scoring: Strong connection=7, Good connection=5, Weak connection=2, No connection=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
-   - Q16: Assess how clearly and meaningfully the results are presented, interpreted, and explained.
-    (Scoring: Excellent clarity=8, Good=5, Partial=2, Weak=0)
-    Explanation: Identify the reason that led to this grade. Explain why this specific grade was chosen over the other options.
+Q4 (Focus & relevance) (0/1/3/5)
+- 5: Every sentence adds value. Dense signal.
+- 3: Some fluff/filler text.
+- 1: Distracting tangents or basic textbook definitions.
+- 0: Bloated/Off-topic.
+Explanation: Identify specific irrelevant sections.
 
-7. SUMMARIES:
-   - poster_summary: Up to 4 lines describing the project
-   - evaluation_summary: Up to 4 lines describing the evaluation
-   - overall_opinion: One sentence ending with exactly one of:
-     * "The section's explanations in the poster are clear"
-     * "The poster contains too much verbal information"  
-     * "Visual explanation is missing"
-     * "The poster visuality is good"
+------------------------------------------------------------
+3) CATEGORY 2: Research & Understanding (20 points)
 
-Return response in this exact JSON format:
-{
-  "project_number": "string",
-  "advisor_name": "string",
-  "presenter_names": "string",
-  "Q1": int, "Q2": int, "Q3": int, "Q4": int,
-  "Q5": int, "Q6": int, "Q7": int,
-  "Q8": int, "Q9": int, "Q10": int,
-  "Q11": int, "Q12": int, "Q13": int, "Q14": int,
-  "Q15": int, "Q16": int,
-  "grade_explanation": {
-    "Q1": "string", "Q2": "string", "Q3": "string", "Q4": "string",
-    "Q5": "string", "Q6": "string", "Q7": "string",
-    "Q8": "string", "Q9": "string", "Q10": "string",
-    "Q11": "string", "Q12": "string", "Q13": "string", "Q14": "string",
-    "Q15": "string", "Q16": "string"
-  },
-  "poster_summary": "string",
-  "evaluation_summary": "string",
-  "overall_opinion": "string"
-}
+Q5 (Understanding & correctness) (0/2/5/8)
+- 8: Nuanced discussion of trade-offs/limitations.
+- 5: Correct textbook application.
+- 2: Buzzword soup or surface-level claims.
+- 0: Factually wrong.
+Explanation: Point out specific technical errors or shallowness.
+
+Q6 (References quality & linkage) (0/2/4/6)
+- 6: Specific papers cited to justify design choices.
+- 4: Generic list of URLs or books.
+- 2: Old/irrelevant sources.
+- 0: None.
+Explanation: Critique the quality of the bibliography.
+
+Q7 (Methodology/implementation clarity) (0/2/4/6)
+- 6: I could reproduce this from the poster alone.
+- 4: High-level block diagram but missing specifics.
+- 2: Magic black box "we used AI".
+- 0: Missing.
+Explanation: List missing technical details (e.g. "Model architecture not specified").
+
+------------------------------------------------------------
+4) CATEGORY 3: Visual Quality & Graphs (15 points)
+
+Q8 (Graphs readability & labeling) (0/2/4/6)
+- 6: Self-contained caption, units on axes, clear legend.
+- 4: Missing one element (e.g. units) or slightly small font.
+- 2: Screenshot of a UI or unreadable plot.
+- 0: None / Blurry artifact.
+Explanation: Mention specific graphs that are hard to read.
+
+Q9 (Graphs relevance to claims) (0/1/3/5)
+- 5: Graph PROVES the conclusion.
+- 3: Graph shows data but link to claim is weak.
+- 1: Decorative stock photo or irrelevant chart.
+- 0: None.
+Explanation: Explain why graphs fail to support claims.
+
+Q10 (Layout & visual coherence) (0/2/3/4)
+- 4: Professional design, breathing room, aligns to grid.
+- 3: Standard template, readable.
+- 2: Cluttered, inconsistent fonts, alignment errors.
+- 0: MS Word screenshot looking.
+Explanation: Critique layout choices (e.g. "Text overlaps images").
+
+------------------------------------------------------------
+5) CATEGORY 4: Structure & Logical Flow (25 points)
+
+Q11 (Intro ↔ Motivation linkage) (0/1/3/5)
+- 5: Problem -> Why it matters -> Solution. Seamless.
+- 3: Connected but jumps around.
+- 1: Motivation feels tacked on.
+- 0: Disconnected.
+Explanation: Explain the logical gap.
+
+Q12 (Section-to-section flow) (0/3/7/10)
+- 10: Story-telling. I never have to hunt for "what's next".
+- 7: Standard linear academic sectioning.
+- 3: Jumping back and forth, confusing flow.
+- 0: Random scattering of boxes.
+Explanation: Describe the reading path difficulty.
+
+Q13 (Internal consistency) (0/1/3/5)
+- 5: Numbers/Claims match everywhere.
+- 3: Minor typo/mismatches.
+- 1: Abstract says X, Results say Y.
+- 0: Contradictory.
+Explanation: Point out specific contradictions.
+
+Q14 (Adds value beyond intro) (0/1/3/5)
+- 5: Deep technical details in method/results.
+- 3: Rephrasing of intro in more words.
+- 1: Just high-level marketing fluff.
+- 0: Empty.
+Explanation: Assess information density.
+
+------------------------------------------------------------
+6) CATEGORY 5: Results & Conclusions (15 points)
+
+Q15 (Conclusion supported by evidence) (0/2/5/7)
+- 7: "We achieved X% impovement" backed by Table 1.
+- 5: "We built a good system" (subjective but plausible).
+- 2: Overclaiming "Perfect accuracy" without proof.
+- 0: No conclusion or unrelated to results.
+Explanation: Quote the conclusion and check against results.
+
+Q16 (Results presentation & interpretation) (0/2/5/8)
+- 8: Clear metrics (Accuracy, latency, etc) + Context ("Better than X").
+- 5: Raw numbers without context.
+- 2: "It works" screenshots only.
+- 0: Missing.
+Explanation: meaningful interpretation of results.
+
+------------------------------------------------------------
+7) SUMMARIES
+- poster_summary: Plain text description.
+- evaluation_summary: BRUTAL critique. Focus on WHY points were lost.
+- overall_opinion: One sentence ending with EXACTLY ONE of:
+  * "The section's explanations in the poster are clear"
+  * "The poster contains too much verbal information"
+  * "Visual explanation is missing"
+  * "The poster visuality is good"
 """.strip()
 
 
@@ -312,121 +367,131 @@ Return response in this exact JSON format:
 
 
 PHASE2_GRADING_PROMPT = """
-You are an academic poster grading expert. You have received an objective analysis of a graduation project poster.
+You are a HARSH and SKEPTICAL academic poster evaluation expert.
+You have received an objective analysis of a graduation project poster.
+Your goal is to expose weaknesses. High scores are RARE (top 5%).
+Most posters should fall in the middle or low range.
 
-HARD RULES:
-- Evidence-first, no guessing, no benefit of the doubt.
-- If evidence is missing/unclear, choose the lower bracket.
-- Use the rubric strictly and consistently.
+CRITICAL SCORING RULES:
+1. START AT ZERO for every question. The poster must EARN every point with visible evidence.
+2. NO "Benefit of the Doubt". If something is vague, it is BAD.
+3. If a required element is missing, the score is AUTOMATICALLY the lowest option.
+4. "Good" means PERFECT compliance. "Excellent" means EXCEPTIONAL, publication-ready quality.
+
+Rubric Application:
+- If text is too small to read casually -> Score lowest on readability.
+- If graphs have no axis labels -> Score lowest on graphs.
+- If intro is a wall of text -> Score lowest on structure.
+
+OUTPUT: Return ONLY valid JSON matching the schema.
 
 For each question:
-1. Review the STRENGTHS and WEAKNESSES from the analysis
-2. Match them against the scoring criteria
-3. Select the grade that best fits the evidence
-4. Explain why this specific grade was chosen over the other options
+1. Review the STRENGTHS and WEAKNESSES from the Phase 1 analysis.
+2. If ANY weakness is listed that corresponds to a scoring deduction, APPLY IT.
+3. Select the grade that best fits the evidence strictly (always round down).
 
 SCORING CRITERIA:
 
 CATEGORY 1: Content Quality (25 points)
 - Q1: Introduction clarity and structure
-  * Excellent (7): Exceptionally clear, comprehensive context, well-organized, engaging
-  * Good (5): Clear context, logical structure, minor gaps
-  * Weak (2): Vague context, poor structure, hard to follow
-  * Poor (0): No clear introduction or context
+  * Excellent (7): (Rare) flawless hook, clear gap, concise.
+  * Good (5): Standard intro, covers basics but maybe dry/verbose.
+  * Weak (2): Hard to follow, missing motivation, or "wall of text".
+  * Poor (0): Missing or incoherent.
 
 - Q2: Introduction connection to topic
-  * Excellent match (8): Perfect alignment, every element connects, seamless flow
-  * Partial match (5): Good connection, some elements loosely related
-  * Weak match (2): Tenuous connection, significant gaps
-  * No match (0): Introduction unrelated to main topic
+  * Excellent match (8): (Rare) Tightly coupled constraint/solution match.
+  * Partial match (5): Generally related but vague connection.
+  * Weak match (2): Generic intro could apply to any project in this field.
+  * No match (0): Irrelevant.
 
 - Q3: Purpose communication
-  * Very clear (5): Explicit, unambiguous, immediately understandable
-  * Clear (3): Stated but requires some inference
-  * Partially clear (1): Vague, requires significant interpretation
-  * Not clear (0): Purpose unclear or absent
+  * Very clear (5): "The goal is X to achieve Y". Crystal clear.
+  * Clear (3): Buried in text but findable.
+  * Partially clear (1): Vague "we worked on..." statement.
+  * Not clear (0): Missing.
 
 - Q4: Content relevance
-  * Fully relevant (5): All content directly supports the topic, no filler
-  * Mostly relevant (3): Minor digressions or tangential content
-  * Some irrelevant parts (1): Noticeable off-topic sections
-  * Many irrelevant parts (0): Significant unrelated content
+  * Fully relevant (5): Every sentence adds value. Dense signal.
+  * Mostly relevant (3): Some fluff/filler text.
+  * Some irrelevant parts (1): Distracting tangents or basic textbook definitions.
+  * Many irrelevant parts (0): Bloated/Off-topic.
 
 CATEGORY 2: Research & Understanding (20 points)
 - Q5: Topic understanding
-  * Excellent understanding (8): Deep mastery, sophisticated concepts, expert-level
-  * Good understanding (5): Solid grasp, appropriate depth, minor gaps
-  * Basic understanding (2): Surface-level, limited depth
-  * Weak understanding (0): Fundamental misunderstandings
+  * Excellent understanding (8): Nuanced discussion of trade-offs/limitations.
+  * Good understanding (5): Correct textbook application.
+  * Basic understanding (2): Buzzword soup or surface-level claims.
+  * Weak understanding (0): Factually wrong.
 
 - Q6: References quality
-  * Highly relevant and well-connected (6): Multiple recent sources, explicitly integrated
-  * Mostly relevant (4): Adequate sources, reasonably connected
-  * Partially relevant (2): Few sources or weak connections
-  * Not relevant (0): No references or irrelevant sources
+  * Highly relevant and well-connected (6): Specific papers cited to justify design choices.
+  * Mostly relevant (4): Generic list of URLs or books.
+  * Partially relevant (2): Old/irrelevant sources.
+  * Not relevant (0): None.
 
 - Q7: Methodology description
-  * Very detailed and clear (6): Comprehensive, reproducible, all steps explained
-  * Clear but missing some details (4): Understandable, some gaps
-  * Weak or unclear (2): Vague, hard to follow
-  * Not described (0): No methodology presented
+  * Very detailed and clear (6): I could reproduce this from the poster alone.
+  * Clear but missing some details (4): High-level block diagram but missing specifics.
+  * Weak or unclear (2): Magic black box "we used AI".
+  * Not described (0): Missing.
 
 CATEGORY 3: Visual Quality & Graphs (15 points)
 - Q8: Graph clarity
-  * Excellent clarity (6): Perfect labeling, highly readable, professional
-  * Good clarity (4): Readable, minor label issues
-  * Low clarity (2): Hard to read, poor labeling
-  * Not clear or missing (0): Illegible or absent
+  * Excellent clarity (6): Self-contained caption, units on axes, clear legend.
+  * Good clarity (4): Missing one element (e.g. units) or slightly small font.
+  * Low clarity (2): Screenshot of a UI or unreadable plot.
+  * Not clear or missing (0): None / Blurry artifact.
 
 - Q9: Graph relevance
-  * Highly relevant (5): Graphs essential to understanding, strong support
-  * Moderately relevant (3): Helpful but not critical
-  * Weak relevance (1): Tangential or redundant
-  * Not relevant (0): Unrelated or decorative only
+  * Highly relevant (5): Graph PROVES the conclusion.
+  * Moderately relevant (3): Graph shows data but link to claim is weak.
+  * Weak relevance (1): Decorative stock photo or irrelevant chart.
+  * Not relevant (0): None.
 
 - Q10: Overall visual coherence
-  * Excellent (4): Harmonious, professional layout, optimal spacing
-  * Good (3): Clean layout, reasonable organization
-  * Acceptable (2): Functional but cluttered or imbalanced
-  * Poor (0): Chaotic, unprofessional appearance
+  * Excellent (4): Professional design, breathing room, aligns to grid.
+  * Good (3): Standard template, readable.
+  * Acceptable (2): Cluttered, inconsistent fonts, alignment errors.
+  * Poor (0): MS Word screenshot looking.
 
 CATEGORY 4: Structure & Logical Flow (25 points)
 - Q11: Introduction-Motivation link
-  * Excellent connection (5): Seamless, explicit, perfectly aligned
-  * Good connection (3): Clear but could be stronger
-  * Weak connection (1): Loose or implicit
-  * No connection (0): Disconnected sections
+  * Excellent connection (5): Problem -> Why it matters -> Solution. Seamless.
+  * Good connection (3): Connected but jumps around.
+  * Weak connection (1): Motivation feels tacked on.
+  * No connection (0): Disconnected.
 
 - Q12: Section flow
-  * Excellent flow (10): Smooth transitions, perfect narrative arc
-  * Good flow (7): Logical progression, minor jumps
-  * Weak flow (3): Disjointed, hard to follow
-  * No flow (0): Incoherent organization
+  * Excellent flow (10): Story-telling. I never have to hunt for "what's next".
+  * Good flow (7): Standard linear academic sectioning.
+  * Weak flow (3): Jumping back and forth, confusing flow.
+  * No flow (0): Random scattering of boxes.
 
 - Q13: Consistency
-  * Fully consistent (5): Perfect alignment, no contradictions
-  * Mostly consistent (3): Minor inconsistencies in terminology or claims
-  * Some inconsistencies (1): Noticeable conflicts
-  * Not consistent (0): Major contradictions
+  * Fully consistent (5): Numbers/Claims match everywhere.
+  * Mostly consistent (3): Minor typo/mismatches.
+  * Some inconsistencies (1): Abstract says X, Results say Y.
+  * Not consistent (0): Contradictory.
 
 - Q14: Information depth
-  * Adds significant value (5): Substantial new information, deep analysis
-  * Adds some value (3): Moderate elaboration beyond intro
-  * Adds little (1): Minimal new information
-  * Adds none (0): Pure repetition of introduction
+  * Adds significant value (5): Deep technical details in method/results.
+  * Adds some value (3): Rephrasing of intro in more words.
+  * Adds little (1): Just high-level marketing fluff.
+  * Adds none (0): Empty.
 
 CATEGORY 5: Results & Conclusions (15 points)
 - Q15: Conclusions support
-  * Strong connection (7): Direct evidence, well-supported, convincing
-  * Good connection (5): Reasonable support, minor gaps
-  * Weak connection (2): Limited evidence, significant leaps
-  * No connection (0): Unsupported claims
+  * Strong connection (7): "We achieved X% impovement" backed by Table 1.
+  * Good connection (5): "We built a good system" (subjective but plausible).
+  * Weak connection (2): Overclaiming "Perfect accuracy" without proof.
+  * No connection (0): No conclusion or unrelated to results.
 
 - Q16: Results clarity
-  * Excellent clarity (8): Thorough interpretation, clear presentation
-  * Good (5): Understandable, adequate detail
-  * Partial (2): Vague or incomplete interpretation
-  * Weak (0): Unclear or absent results
+  * Excellent clarity (8): Clear metrics (Accuracy, latency, etc) + Context ("Better than X").
+  * Good (5): Raw numbers without context.
+  * Partial (2): "It works" screenshots only.
+  * Weak (0): Missing.
 
 Based on the Phase 1 analysis provided, assign grades and explain your reasoning.
 
@@ -452,27 +517,23 @@ Return response in this exact JSON format:
 # Strict Approach Prompt + Schema
 # -----------------------------
 STRICT_POSTER_EVALUATION_PROMPT = """
-You are a STRICT and CRITICAL academic poster evaluation expert.
+You are a HARSH and SKEPTICAL academic poster evaluation expert.
+Your goal is to expose weaknesses. High scores are RARE (top 5%).
+Most posters should fall in the middle or low range.
 
-GOAL
-- Produce stable, repeatable scoring for the SAME poster using the SAME rubric.
-- Be harsh. High scores are rare and must be justified by clear evidence visible on the poster.
-- If evidence is missing/unclear, you MUST choose the lower score bracket.
+CRITICAL SCORING RULES:
+1. START AT ZERO for every question. The poster must EARN every point with visible evidence.
+2. NO "Benefit of the Doubt". If something is vague, it is BAD.
+3. If a required element is missing, the score is AUTOMATICALLY the lowest option.
+4. "Good" means PERFECT compliance. "Excellent" means EXCEPTIONAL, publication-ready quality.
+5. PENALIZE DENSITY: "Wall of text" or excessive verbosity must receive LOW scores in Q1, Q4, and Q10.
 
-HARD RULES
-1) Evidence-first: For each question, only award a score above the minimum if the required evidence is clearly present on the poster.
-2) No guessing: If text is unreadable, missing, or ambiguous, score it as missing/weak (lowest applicable bracket).
-3) No “benefit of the doubt”: Default to lower scores unless the poster explicitly earns higher scores.
-4) Consistency: Use the SAME interpretation of each bracket across posters. Avoid subjective inflation.
-5) Do NOT add any keys outside the provided JSON schema. Output must validate.
+CRITICAL RED FLAGS (MANDATORY PENALTIES):
+- TITLE MISMATCH: If the Title contradicts the Body (bait-and-switch), Q2 and Q13 MUST be 0.
+- EVIDENCE GAP: If Results contain NO numerical metrics, NO tables, and NO statistical comparisons (qualitative/screenshots ONLY), Q15 and Q16 MUST be SCORED 0 or 2. Having many screenshots does NOT substitute for metrics.
+- RECOGNITION ONLY: If the "Methodology" is just a list of software used (e.g., "We used Python and TensorFlow") without describing the actual ALGORITHM or architecture, Q7 MUST be <= 2.
 
-SCORING METHOD (IMPORTANT)
-- For each Q, internally check: (A) required elements present? (B) clarity/readability? (C) direct linkage to claims?
-- If any required element fails, drop to the next lower bracket immediately.
-- Only use the top bracket if it is unequivocally excellent.
-
-OUTPUT
-Return ONLY a valid JSON object matching the schema (no markdown, no commentary).
+OUTPUT: Return ONLY valid JSON matching the schema.
 
 ------------------------------------------------------------
 1) METADATA (extract EXACTLY if present; else empty string)
@@ -483,123 +544,126 @@ Return ONLY a valid JSON object matching the schema (no markdown, no commentary)
 ------------------------------------------------------------
 2) CATEGORY 1: Content Quality (25 points)
 
-Q1 (Intro clarity & structure) (0/2/5/7)
-- 7: Intro is clearly labeled (or obvious), readable, concise, and covers: context + problem + motivation.
-- 5: Mostly clear but minor issues (slightly verbose OR missing 1 element).
-- 2: Hard to follow, disorganized, or missing multiple core elements.
-- 0: Intro missing or not readable.
+Q1 (Intro clarity & structure) (0/1/3/5/7)
+- 7: (Rare) Flawless hook, clear gap, concise, minimal text. High signal-to-noise.
+- 5: Standard intro, well-structured, easy to read.
+- 3: Dense/Verbose or slightly unstructured, but understandable.
+- 1: "Wall of text", hard to follow, or missing motivation.
+- 0: Missing or incoherent.
 
 Q2 (Intro-topic alignment) (0/2/5/8)
-- 8: Intro explicitly matches the main topic and sets up what is later delivered (no mismatch).
-- 5: Mostly aligned but some gaps/mild mismatch.
-- 2: Weak alignment; intro is generic or loosely related.
-- 0: No alignment / wrong topic.
+- 8: (Rare) Tightly coupled constraint/solution match.
+- 5: Generally related.
+- 2: Generic intro or weak link between title and content.
+- 0: MISMATCH: Title and content are about different things.
 
 Q3 (Objective clarity) (0/1/3/5)
-- 5: Objective/aim is explicitly stated, specific, and unambiguous.
-- 3: Objective is stated but slightly vague/general.
-- 1: Objective implied but not clearly stated.
-- 0: No objective/aim.
+- 5: "The goal is X to achieve Y". Crystal clear and EXPLICIT.
+- 3: Buried in text but findable.
+- 1: Vague "we worked on..." statement.
+- 0: Missing.
 
 Q4 (Focus & relevance) (0/1/3/5)
-- 5: Content is tightly focused; no fluff; every section supports the project.
-- 3: Mostly focused; small amount of unrelated/verbose content.
-- 1: Noticeable irrelevant parts or excessive filler.
-- 0: Many irrelevant parts / poster is bloated and unfocused.
+- 5: Every sentence adds value. No fluff. No basic textbook definitions.
+- 3: some fluff/filler text (e.g. general background that isn't project-specific).
+- 1: Distracting tangents or mostly generic content.
+- 0: Bloated/Off-topic.
 
 ------------------------------------------------------------
 3) CATEGORY 2: Research & Understanding (20 points)
 
 Q5 (Understanding & correctness) (0/2/5/8)
-- 8: Concepts are correct, well explained, and show depth (not copy-paste superficial).
-- 5: Generally correct with moderate depth.
-- 2: Basic/hand-wavy understanding; shallow explanations.
-- 0: Wrong/confused or no evidence of understanding.
+- 8: Nuanced discussion of trade-offs/limitations/alternatives. Proves deep expertise.
+- 5: Correct application of concepts to THIS project. Basic competence shown.
+- 2: Generic "textbook" definitions or buzzword soup without project-specific insight.
+- 0: Factually wrong.
 
 Q6 (References quality & linkage) (0/2/4/6)
-- 6: References are credible and clearly connected to claims (citations appear where claims are made OR clear mapping).
-- 4: References exist and mostly relevant, but linkage is weak.
-- 2: References are generic/dated/unclear relevance.
-- 0: No references OR irrelevant.
+- 6: Relevant academic reference(s) included and visibly cited in text.
+- 4: List of URLs or general books without specific papers.
+- 2: Old/irrelevant sources or completely generic.
+- 0: None.
 
 Q7 (Methodology/implementation clarity) (0/2/4/6)
-- 6: Clear steps/pipeline/architecture; enough detail to understand what was done.
-- 4: Clear but missing some critical details.
-- 2: Vague/unclear steps; hard to reproduce/understand.
-- 0: Missing methodology/implementation.
+- 6: Exceptionally detailed. I could reproduce this from the poster alone.
+- 4: High-level block diagram/pipeline but missing parameters/specifics.
+- 2: Magic black box "we used AI" or generic list of steps/software.
+- 0: Missing.
 
 ------------------------------------------------------------
 4) CATEGORY 3: Visual Quality & Graphs (15 points)
 
 Q8 (Graphs readability & labeling) (0/2/4/6)
-- 6: Axes/titles/legends readable; units clear; visuals not blurry; properly labeled.
-- 4: Mostly readable; minor labeling/clarity issues.
-- 2: Low clarity; labels missing/hard to read.
-- 0: No graphs OR unreadable.
+- 6: Professional: big font, clear axis labels, units, legends. Self-contained.
+- 4: Minor issues: missing one unit or slightly small font.
+- 2: Hard to read, pixelated, missing axes, or UI screenshots instead of data plots.
+- 0: None / Blurry artifact.
 
 Q9 (Graphs relevance to claims) (0/1/3/5)
-- 5: Graphs directly support key claims and add real evidence/insight.
-- 3: Graphs somewhat support claims but limited insight.
-- 1: Graphs are decorative or weakly connected.
-- 0: Not relevant / no meaningful support.
+- 5: Graph PROVES the main conclusion quantitatively (e.g., Accuracy vs Baseline).
+- 3: Graph shows data but link to claim is weak/qualitative.
+- 1: Decorative stock photo or irrelevant chart.
+- 0: None.
 
 Q10 (Layout & visual coherence) (0/2/3/4)
-- 4: Excellent hierarchy, spacing, alignment; consistent style; easy to scan.
-- 3: Good layout with minor issues.
-- 2: Acceptable but cluttered or inconsistent.
-- 0: Poor layout; hard to read.
+- 4: Professional design, breathing room, perfect alignment, consistent style.
+- 3: Standard template, readable, mostly aligned.
+- 2: Cluttered, inconsistent fonts, alignment errors, text heavy ("Wall of text").
+- 0: MS Word screenshot looking or chaotic mess.
 
 ------------------------------------------------------------
 5) CATEGORY 4: Structure & Logical Flow (25 points)
 
 Q11 (Intro ↔ Motivation linkage) (0/1/3/5)
-- 5: Motivation clearly emerges from intro problem/context; explicit rationale.
-- 3: Generally linked but slightly weak.
-- 1: Weak linkage; motivation feels generic.
-- 0: No linkage.
+- 5: Problem -> Why it matters -> Solution. Seamless logical chain.
+- 3: Connected but jumps around or motivation is generic.
+- 1: Motivation feels tacked on or repetitive.
+- 0: Disconnected.
 
 Q12 (Section-to-section flow) (0/3/7/10)
-- 10: Strong logical chain: intro → method → results → conclusion; easy to follow.
-- 7: Mostly logical; small jumps.
-- 3: Weak flow; reader must infer transitions.
-- 0: No flow; sections disconnected or missing.
+- 10: Story-telling. Natural progression. No "hunting" for the next section.
+- 7: Standard linear academic sectioning (Intro->Method->Results).
+- 3: Jumping back and forth, confusing flow, or non-standard order.
+- 0: Random scattering of boxes.
 
 Q13 (Internal consistency) (0/1/3/5)
-- 5: Terminology, claims, and results align; no contradictions.
-- 3: Mostly consistent; minor issues.
-- 1: Some inconsistencies/conflicts.
-- 0: Not consistent.
+- 5: Numbers/Claims match everywhere. Title matches content.
+- 3: Minor typos or slight mismatches in data representation.
+- 1: Abstract/Title says X, Results/Body say Y.
+- 0: Contradictory or Bait-and-Switch title.
 
 Q14 (Adds value beyond intro) (0/1/3/5)
-- 5: Substantial new, relevant info beyond intro (methods/results/analysis).
-- 3: Some added value.
-- 1: Adds little beyond intro.
-- 0: Adds none.
+- 5: Substantial technical details in body (formulas, architecture, parameters).
+- 3: Rephrasing of intro in more words; minimal new technical info.
+- 1: Just high-level marketing fluff or very shallow implementation detail.
+- 0: Empty.
 
 ------------------------------------------------------------
 6) CATEGORY 5: Results & Conclusions (15 points)
 
 Q15 (Conclusion supported by evidence) (0/2/5/7)
-- 7: Conclusions are directly supported by displayed results; no overclaiming.
-- 5: Mostly supported; minor overreach.
-- 2: Weak support; conclusions not well tied to results.
-- 0: No support / no conclusion.
+- 7: "We achieved X% improvement" backed by statistical analysis or direct comparison.
+- 5: Supported by concrete numerical data/metrics shown in results.
+- 2: Qualitative/Subjective ONLY ("it works", "user-friendly") - NO NUMBERS.
+- 0: No conclusion or unrelated to results.
 
 Q16 (Results presentation & interpretation) (0/2/5/8)
-- 8: Results are clearly presented AND interpreted (what they mean, why they matter).
-- 5: Clear results but limited interpretation.
-- 2: Partial/unclear presentation.
-- 0: Missing/unclear results.
+- 8: Clear metrics + Comparisons/Baselines (e.g., Table comparing to State-of-the-Art).
+- 5: Raw numbers/tables/graphs with quantitative data.
+- 2: VISUAL ONLY (Gallery of screenshots/colors/images) - NO METRICS.
+- 0: Missing.
 
 ------------------------------------------------------------
-7) SUMMARIES
-- poster_summary: Up to 4 lines describing the project (plain text).
-- evaluation_summary: Up to 4 lines describing key strengths/weaknesses (plain text).
+7) SUMMARIES & LOGIC CHECK
+- poster_summary: Plain text description.
+- evaluation_summary: BRUTAL critique. Focus on WHY points were lost.
 - overall_opinion: One sentence ending with EXACTLY ONE of:
   * "The section's explanations in the poster are clear"
   * "The poster contains too much verbal information"
   * "Visual explanation is missing"
   * "The poster visuality is good"
+
+FINAL RULE: Ensure your assigned SCORES are logically consistent with your CRITIQUE. If you write "there are no metrics," you MUST NOT assign a score higher than 2 for Q15/Q16.
 """.strip()
 
 
@@ -614,7 +678,7 @@ POSTER_EVALUATION_JSON_SCHEMA = {
             "advisor_name": {"type": "string"},
             "presenter_names": {"type": "string"},
 
-            "Q1": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q1": {"type": "integer", "enum": [0, 1, 3, 5, 7]},
             "Q2": {"type": "integer", "enum": [0, 2, 5, 8]},
             "Q3": {"type": "integer", "enum": [0, 1, 3, 5]},
             "Q4": {"type": "integer", "enum": [0, 1, 3, 5]},

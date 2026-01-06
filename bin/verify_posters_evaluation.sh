@@ -2,13 +2,17 @@
 
 # Configuration
 PORT=8090
+ID=$(date +%s)
 SERVER_SCRIPT="run.py"
 UPLOAD_ENDPOINT="http://localhost:$PORT/upload/batch"
 HEALTH_ENDPOINT="http://localhost:$PORT/health"
 JOBS_ENDPOINT_TEMPLATE="http://localhost:$PORT/jobs"
-OUTPUT_FILE="bin/posters_evaluation_results.txt"
+OUTPUT_FILE="bin/${ID}_posters_evaluation_results.txt"
 
-STRATEGIES=("direct" "reasoning" "deep_analysis" "strict")
+# Approaches
+STRATEGIES=("strict")
+declare -A LABELS
+LABELS=( ["strict"]="Strict" ["direct"]="Direct" ["reasoning"]="Reasoning" ["deep_analysis"]="Deep Analysis" )
 
 # Cleanup helper function
 cleanup() {
@@ -45,11 +49,10 @@ get_json_value() {
     echo "$1" | python -c "import sys, json; print(json.load(sys.stdin).get('$2', ''))" 2>/dev/null
 }
 
-echo "Posters Evaluation Results (Rankings)" > "$OUTPUT_FILE"
-
 for strategy in "${STRATEGIES[@]}"; do
-    echo "=== Used Approach: ${strategy^^} ==="
-    
+    label="${LABELS[$strategy]}"
+    echo "=== Used Approach: $label ==="
+
     export EVALUATION_APPROACH="$strategy"
     export APP_PORT="$PORT"
     export APP_RELOAD="false"
@@ -99,13 +102,21 @@ for strategy in "${STRATEGIES[@]}"; do
             
             if [ "$STATUS" == "completed" ]; then
                 echo "Job completed!"
+                echo "Posters Evaluation Results (Rankings) - $label" >> "$OUTPUT_FILE"
+                
+                # Save raw JSON for debugging
+                echo "$JOB_STATUS_JSON" > "bin/${ID}_json_output.json"
                 
                 # Generate Report
                 echo "$JOB_STATUS_JSON" | python bin/verify_report.py --strategy "$strategy" | tee -a "$OUTPUT_FILE"
+
+                # Print final message
+                echo "Posters evaluation complete. Results saved to $OUTPUT_FILE"
                 break
             elif [ "$STATUS" == "failed" ]; then
                 echo "Job failed!"
-                ERROR=$(get_json_value "$JOB_STATUS_JSON" "error")
+                # Extract the most descriptive error available (prioritize detailed logs over generic lists)
+                ERROR=$(echo "$JOB_STATUS_JSON" | python bin/verify_error.py 2>/dev/null)
                 echo "Error: $ERROR"
                 break
             fi
@@ -113,6 +124,3 @@ for strategy in "${STRATEGIES[@]}"; do
         echo ""
     fi
 done
-
-echo ""
-echo "Posters evaluation complete. Results saved to $OUTPUT_FILE"

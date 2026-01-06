@@ -1,6 +1,11 @@
+import io
 import sys
 import json
 import argparse
+
+# Set stdout to UTF-8 for Windows consistency
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # Poster ID -> Expert Rank Mapping
 EXPERT_RANKS = {
@@ -22,7 +27,7 @@ def main():
     parser.add_argument("--strategy", required=True, help="Evaluation strategy name")
     args = parser.parse_args()
 
-    table_width = 63
+    cell_width = 76
 
     try:
         # Read JSON from stdin
@@ -41,23 +46,23 @@ def main():
 
     # Print Report Header
     print("")
-    print("Expert Rank vs Approach Rank")
-    print(f"{'-' * table_width}")
-    print(f"| {'Poster ID':^10} | {'Grade':^10} | {'Approach Rank':^15} | {'Expert Rank':^15} |")
-    print(f"{'-' * table_width}")
+    print("Approach Rank vs Expert Rank")
+    print(f"{'-' * cell_width}")
+    print(f"| {'Poster ID':^10} | {'Grade':^10} | {'Approach Rank':^15} | {'Expert Rank':^15} | {'Match':^10} |")
+    print(f"{'-' * cell_width}")
 
     # Print Rows
     for i, res in enumerate(results, 1):
         fname = res.get("poster_file", "")
-        # Extract ID from filename (assuming id.jpeg)
         pid = fname.split(".")[0] if fname else "N/A"
         grade = res.get("final_grade", "N/A")
         expert = EXPERT_RANKS.get(pid, "N/A")
         
-        print(f"| {pid:^10} | {grade:^10} | {i:^15} | {expert:^15} |")
+        match_status = "YES" if i == expert else "NO"
+        print(f"| {pid:^10} | {grade:^10} | {i:^15} | {expert:^15} | {match_status:^10} |")
     
     # Print Footer
-    print(f"{'-' * table_width}")
+    print(f"{'-' * cell_width}")
 
 if __name__ == "__main__":
     main()

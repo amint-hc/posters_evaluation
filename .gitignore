@@ -64,3 +64,4 @@ htmlcov/
 
 # Bin
 bin/*.txt
+bin/*.json
