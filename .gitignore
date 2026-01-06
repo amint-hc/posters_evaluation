@@ -62,3 +62,5 @@ htmlcov/
 # Cache
 .cache
 
+# Bin
+bin/*.txt
