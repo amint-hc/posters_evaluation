@@ -191,14 +191,14 @@ poster-evaluation/
 │   │   └── output_generator.py # Async file generation
 │   └── utils/
 │       └── validators.py    # File validation
-├── tests/                   # Comprehensive test suite
+├── tests/                  # Comprehensive test suite
 │   ├── test_api.py         # API endpoint tests
 │   ├── test_evaluator.py   # Core logic tests
 │   └── test_integration.py # End-to-end tests
-├── uploads/                 # Temporary file storage (by job_id)
-├── outputs/                 # Generated results (by job_id)
-├── venv/                    # Virtual environment
-├── requirements.txt         # Python dependencies
+├── uploads/                # Temporary file storage (by job_id)
+├── downloads/              # Generated results (by job_id)
+├── venv/                   # Virtual environment
+├── requirements.txt        # Python dependencies
 ├── pyproject.toml          # Project configuration
 ├── Dockerfile              # Container configuration
 ├── docker-compose.yml      # Service orchestration

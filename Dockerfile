@@ -15,8 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY src/ ./src/
 
-# Create directories for uploads and outputs
-RUN mkdir -p uploads outputs
+# Create directories for uploads and downloads
+RUN mkdir -p uploads downloads
 
 # Set environment
 ENV PYTHONPATH=/app

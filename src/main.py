@@ -39,12 +39,12 @@ app.add_middleware(
 
 # File storage configuration
 UPLOAD_DIR = Path("uploads")
-OUTPUT_DIR = Path("outputs")
+DOWNLOAD_DIR = Path("downloads")
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
 # Ensure directories exist
 UPLOAD_DIR.mkdir(exist_ok=True)
-OUTPUT_DIR.mkdir(exist_ok=True)
+DOWNLOAD_DIR.mkdir(exist_ok=True)
 
 def validate_image_file(file: UploadFile) -> bool:
     """Validate uploaded image file"""
@@ -90,9 +90,9 @@ async def process_evaluation_job(job_id: str):
             print(f"Job {job_id} not found during processing.")
             return
         
-        # Generate output files
-        output_gen = AsyncOutputGenerator(OUTPUT_DIR / job_id)
-        await output_gen.generate_all_outputs(results, job.processing_logs)
+        # Generate download files
+        download_gen = AsyncOutputGenerator(DOWNLOAD_DIR / job_id)
+        await download_gen.generate_all_outputs(results, job.processing_logs)
         
     except Exception as e:
         print(f"Error processing job {job_id}: {str(e)}")
@@ -113,7 +113,7 @@ async def health_check():
         
         # Check directories
         upload_dir_status = "accessible" if UPLOAD_DIR.exists() else "missing"
-        output_dir_status = "accessible" if OUTPUT_DIR.exists() else "missing"
+        download_dir_status = "accessible" if DOWNLOAD_DIR.exists() else "missing"
         
         # Try to get active jobs count, but don't fail if evaluator can't be created
         try:
@@ -126,7 +126,7 @@ async def health_check():
             "status": "healthy",
             "api_key": api_key_status,
             "upload_directory": upload_dir_status,
-            "output_directory": output_dir_status,
+            "download_directory": download_dir_status,
             "active_jobs": active_jobs
         }
         
@@ -235,10 +235,10 @@ async def delete_job(job_id: str):
         if upload_dir.exists():
             shutil.rmtree(upload_dir)
         
-        # Remove output files
-        output_dir = OUTPUT_DIR / job_id
-        if output_dir.exists():
-            shutil.rmtree(output_dir)
+        # Remove download files
+        download_dir = DOWNLOAD_DIR / job_id
+        if download_dir.exists():
+            shutil.rmtree(download_dir)
         
         # Remove job from memory
         del get_evaluator().jobs[job_id]
@@ -281,7 +281,7 @@ async def download_master_results(job_id: str):
     if not job or job.status != ProcessingStatus.COMPLETED:
         raise HTTPException(status_code=404, detail="Results not available")
     
-    file_path = OUTPUT_DIR / job_id / f"results_master.csv"
+    file_path = DOWNLOAD_DIR / job_id / f"results_master.csv"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Master results file not found")
     
@@ -298,7 +298,7 @@ async def download_run_log(job_id: str):
     if not job or job.status != ProcessingStatus.COMPLETED:
         raise HTTPException(status_code=404, detail="Results not available")
     
-    file_path = OUTPUT_DIR / job_id / "run_log.jsonl"
+    file_path = DOWNLOAD_DIR / job_id / "run_log.jsonl"
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Run log file not found")
     
@@ -315,7 +315,7 @@ async def download_breakdown_file(job_id: str, filename: str):
     if not job or job.status != ProcessingStatus.COMPLETED:
         raise HTTPException(status_code=404, detail="Results not available")
     
-    file_path = OUTPUT_DIR / job_id / filename
+    file_path = DOWNLOAD_DIR / job_id / filename
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="Breakdown file not found")
     

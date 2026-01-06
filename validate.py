@@ -4,8 +4,8 @@ Quick validation script to test the poster evaluation implementation.
 This script validates the code structure and imports without requiring all dependencies.
 """
 
-import sys
 import os
+import sys
 import importlib.util
 from pathlib import Path
 
@@ -14,26 +14,36 @@ def validate_file_structure():
     print("🔍 Validating file structure...")
     
     required_files = [
+        "bin/",
+        "bin/verify_posters_evaluation.sh",
+        "bin/verify_report.py",
+        "bin/verify_error.py",
+        "src/",
         "src/__init__.py",
         "src/main.py",
         "src/evaluator.py",
+        "src/strategies.py",
+        "src/models/",
         "src/models/__init__.py",
         "src/models/poster_data.py",
         "src/models/openai_client.py",
-        "src/models/prompts/direct.py",
-        "src/models/prompts/reasoning.py",
-        "src/models/prompts/deep_analysis.py",
+        "src/models/prompts.py",
+        "src/processors/",
         "src/processors/__init__.py",
         "src/processors/output_generator.py",
+        "src/utils/",
         "src/utils/__init__.py",
         "src/utils/validators.py",
-        "requirements.txt",
-        "Dockerfile",
-        "docker-compose.yml",
+        "tests/",
         "tests/conftest.py",
         "tests/test_api.py",
         "tests/test_evaluator.py",
-        "tests/test_integration.py"
+        "tests/test_integration.py",
+        "uploads/",
+        "downloads/",
+        "requirements.txt",
+        "Dockerfile",
+        "docker-compose.yml",
     ]
     
     missing_files = []
@@ -55,11 +65,10 @@ def validate_python_syntax():
     python_files = [
         "src/main.py",
         "src/evaluator.py",
+        "src/strategies.py",
         "src/models/poster_data.py",
         "src/models/openai_client.py",
-        "src/models/prompts/direct.py",
-        "src/models/prompts/reasoning.py",
-        "src/models/prompts/deep_analysis.py",
+        "src/models/prompts.py",
         "src/processors/output_generator.py",
         "src/utils/validators.py"
     ]

@@ -7,17 +7,17 @@ from typing import List
 from ..models.poster_data import PosterEvaluation, ProcessingLog
 
 class AsyncOutputGenerator:
-    """Generate all required output files asynchronously"""
+    """Generate all required download files asynchronously"""
     
     
-    def __init__(self, output_dir: Path):
-        self.output_dir = output_dir
-        self.output_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, download_dir: Path):
+        self.download_dir = download_dir
+        self.download_dir.mkdir(parents=True, exist_ok=True)
     
     async def generate_master_results(self, evaluations: List[PosterEvaluation]) -> Path:
         """Generate master CSV results file"""
         filename = f"results_master.csv"
-        filepath = self.output_dir / filename
+        filepath = self.download_dir / filename
         
         # Prepare data for CSV
         data = []
@@ -58,7 +58,7 @@ class AsyncOutputGenerator:
             
             # Clean filename (remove invalid characters)
             filename = "".join(c for c in filename if c.isalnum() or c in "._- ")
-            filepath = self.output_dir / filename
+            filepath = self.download_dir / filename
             
             # Create JSON data
             json_data = eval.to_dict()
@@ -78,7 +78,7 @@ class AsyncOutputGenerator:
     
     async def generate_run_log(self, logs: List[ProcessingLog]) -> Path:
         """Generate JSONL run log file"""
-        filepath = self.output_dir / "run_log.jsonl"
+        filepath = self.download_dir / "run_log.jsonl"
         
         async with aiofiles.open(filepath, 'w', encoding='utf-8') as f:
             for log in logs:
@@ -89,7 +89,7 @@ class AsyncOutputGenerator:
     
     async def generate_all_outputs(self, evaluations: List[PosterEvaluation], 
                                  logs: List[ProcessingLog]) -> dict:
-        """Generate all output files concurrently"""
+        """Generate all download files concurrently"""
         
         # Run all generation tasks concurrently
         master_task = self.generate_master_results(evaluations)

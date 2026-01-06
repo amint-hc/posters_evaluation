@@ -5,7 +5,7 @@ from pathlib import Path
 # Add src to path
 sys.path.append(str(Path("d:/Backup/Projects/work/Posters Evaluation/posters_evaluation")))
 
-from src.strategies import get_strategy, DirectStrategy, ReasoningStrategy, DeepAnalysisStrategy
+from src.strategies import get_strategy, DirectStrategy, ReasoningStrategy, DeepAnalysisStrategy, StrictStrategy
 
 def test_strategy_factory():
     print("Testing Strategy Factory...")
@@ -21,9 +21,13 @@ def test_strategy_factory():
     s3 = get_strategy("deep_analysis")
     assert isinstance(s3, DeepAnalysisStrategy), f"Expected DeepAnalysisStrategy, got {type(s3)}"
     print("[OK] deep_analysis -> DeepAnalysisStrategy")
+
+    s4 = get_strategy("strict")
+    assert isinstance(s4, StrictStrategy), f"Expected StrictStrategy, got {type(s4)}"
+    print("[OK] strict -> StrictStrategy")
     
-    s4 = get_strategy("unknown_strategy")
-    assert isinstance(s4, DirectStrategy), f"Expected default DirectStrategy, got {type(s4)}"
+    s5 = get_strategy("unknown_strategy")
+    assert isinstance(s5, DirectStrategy), f"Expected default DirectStrategy, got {type(s5)}"
     print("[OK] unknown -> DirectStrategy (Default)")
 
 if __name__ == "__main__":

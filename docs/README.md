@@ -123,7 +123,7 @@ src/
     └── validators.py    # File validation
 tests/                   # Test suite
 uploads/                 # Uploaded files
-outputs/                 # Generated results
+downloads/               # Generated results
 venv/                    # Virtual environment (created by user)
 ```
 
@@ -161,11 +161,11 @@ The system evaluates posters on 15 key aspects:
 1. **Import errors:** Ensure all dependencies are installed
 2. **API key errors:** Check your `.env` file configuration
 3. **File upload errors:** Verify file format and size limits
-4. **Permission errors:** Ensure write access to `uploads/` and `outputs/`
+4. **Permission errors:** Ensure write access to `uploads/` and `downloads/`
 
 ### Log Files
 
-Check `outputs/` directory for:
+Check `downloads/` directory for:
 - Processing logs
 - Error reports
 - Job status files
@@ -179,14 +179,14 @@ docker-compose -f docker-compose.yml up -d
 
 ### Cloud Deployment
 - Configure environment variables
-- Set up persistent storage for uploads/outputs
+- Set up persistent storage for uploads/downloads
 - Enable HTTPS and security headers
 - Monitor API performance and costs
 
 ## 📞 Support
 
 For issues and questions:
-1. Check the logs in `outputs/`
+1. Check the logs in `downloads/`
 2. Verify configuration in `.env`
 3. Run validation: `python validate.py`
 4. Run tests: `python run_tests.py`

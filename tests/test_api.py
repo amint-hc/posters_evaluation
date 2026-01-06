@@ -19,7 +19,7 @@ class TestHealthEndpoint:
         assert result["status"] == "healthy"
         assert "api_key" in result
         assert "upload_directory" in result
-        assert "output_directory" in result
+        assert "download_directory" in result
         assert "active_jobs" in result
 
 class TestSingleUploadEndpoint:
@@ -170,10 +170,10 @@ class TestDownloadEndpoints:
         from datetime import datetime
         from pathlib import Path
         
-        # Create temp output directory and file
-        outputs_dir = Path("outputs") / "test_job_123"
-        outputs_dir.mkdir(parents=True, exist_ok=True)
-        test_file = outputs_dir / "results_master.csv"
+        # Create temp download directory and file
+        download_dir = Path("downloads") / "test_job_123"
+        download_dir.mkdir(parents=True, exist_ok=True)
+        test_file = download_dir / "results_master.csv"
         
         try:
             test_file.write_text("title,score\nTest Poster,85\n")
@@ -199,8 +199,8 @@ class TestDownloadEndpoints:
             # Clean up
             if test_file.exists():
                 test_file.unlink()
-            if outputs_dir.exists():
-                outputs_dir.rmdir()
+            if download_dir.exists():
+                download_dir.rmdir()
 
     def test_download_results_file_not_found(self, client):
         """Test download of non-existent file."""

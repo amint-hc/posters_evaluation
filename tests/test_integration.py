@@ -140,10 +140,10 @@ class TestDataValidation:
             assert response.status_code == 404
 
 class TestOutputGeneration:
-    """Test output file generation and downloads."""
+    """Test download file generation and downloads."""
     
     def test_output_file_creation(self, sample_poster_data, mock_evaluation_response):
-        """Test that output files are created correctly."""
+        """Test that download files are created correctly."""
         # This would require mocking file system operations
         # and testing the AsyncOutputGenerator directly
         pass  # Placeholder for file generation tests

@@ -45,7 +45,7 @@ Thumbs.db
 
 # Project specific
 uploads/
-outputs/
+downloads/
 *.jpg
 # *.jpeg
 *.png
