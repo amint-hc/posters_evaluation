@@ -5,11 +5,11 @@
 
 ## Project Overview
 
-This is an AI-powered academic poster evaluation system that automatically analyzes and grades academic posters using OpenAI's GPT-4 Vision API. The system evaluates posters against a comprehensive 16-question rubric across 5 categories and provides detailed feedback.
+This is an AI-powered academic poster evaluation system that automatically analyzes and grades academic poster using OpenAI's GPT-4 Vision API. The system evaluates posters against a comprehensive 16-question rubric across 5 categories and provides detailed feedback.
 
 ### Academic Context
 
-This system was developed as a graduation project to automate the evaluation of academic posters using AI. It demonstrates:
+This system was developed as a graduation project to automate the evaluation of academic poster using AI. It demonstrates:
 - Integration of AI vision models for academic assessment
 - Development of user-friendly interfaces for non-technical users
 - Implementation of multiple evaluation strategies for comprehensive analysis
@@ -27,6 +27,9 @@ This system was developed as a graduation project to automate the evaluation of 
 - **Excel Export:** Generates formatted Excel files with comparison tables
 - **Batch Processing:** Evaluate multiple posters simultaneously
 
+### Project Screenshot
+
+![Project Screenshot](docs/image.png)
 
 ## File Structure
 

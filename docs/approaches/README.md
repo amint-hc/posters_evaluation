@@ -29,13 +29,9 @@ This folder contains documentation about different evaluation approaches used by
 ## Shared Model Characteristics
 
 All approaches use identical configuration:
-- Model: GPT-5 or newer
-- Max Tokens: 4096
+- Model: GPT-4.1
+- Max Tokens: 1024
 - Temperature: 0.0 (consistency)
-- Top-p: 1.0
-- Presence Penalty: 0.0
-- Frequency Penalty: 0.0
-- Seed: 42 (reproducibility)
 - Timeout: 180 seconds
 
 Differences come from prompt design and processing logic only.
