@@ -29,6 +29,7 @@ ENV/
 
 # Environment Variables
 .env
+.secret
 
 # FastAPI/Uvicorn
 *.log
@@ -65,3 +66,7 @@ htmlcov/
 # Bin
 bin/*.txt
 bin/*.json
+
+# Mock
+mock/__pycache__/
+mock/posters/*.xlsx

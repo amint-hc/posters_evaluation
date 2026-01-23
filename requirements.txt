@@ -20,6 +20,7 @@ aiofiles>=22.0.0,<24.0.0
 python-dotenv>=1.0.0
 pathlib2>=2.3.0
 typing-extensions>=4.0.0
+requests>=2.31.0
 
 # Development & Testing
 pytest>=7.0.0

@@ -49,42 +49,46 @@ get_json_value() {
     echo "$1" | python -c "import sys, json; print(json.load(sys.stdin).get('$2', ''))" 2>/dev/null
 }
 
+# Start server once (no approach in environment)
+export APP_PORT="$PORT"
+export APP_RELOAD="false"
+
+echo "Starting server..."
+python "$SERVER_SCRIPT" > bin/server_log.txt 2>&1 &
+SERVER_PID=$!
+
+# Wait for server
+SERVER_UP=0
+for i in {1..30}; do
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_ENDPOINT")
+    if [ "$HTTP_CODE" == "200" ]; then
+        SERVER_UP=1
+        break
+    fi
+    sleep 1
+done
+
+if [ "$SERVER_UP" -eq 0 ]; then
+    echo "Server failed to start."
+    cat bin/server_log.txt
+    exit 1
+fi
+
+echo "Server UP. Running evaluations for all approaches..."
+echo ""
+
+# Run evaluations for each approach
 for strategy in "${STRATEGIES[@]}"; do
     label="${LABELS[$strategy]}"
     echo "=== Used Approach: $label ==="
-
-    export EVALUATION_APPROACH="$strategy"
-    export APP_PORT="$PORT"
-    export APP_RELOAD="false"
     
-    echo "Starting server..."
-    python "$SERVER_SCRIPT" > bin/server_log.txt 2>&1 &
-    SERVER_PID=$!
+    echo "Uploading batch with approach: $strategy..."
     
-    # Wait for server
-    SERVER_UP=0
-    for i in {1..30}; do
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_ENDPOINT")
-        if [ "$HTTP_CODE" == "200" ]; then
-            SERVER_UP=1
-            break
-        fi
-        sleep 1
-    done
-    
-    if [ "$SERVER_UP" -eq 0 ]; then
-        echo "Server failed to start."
-        cat bin/server_log.txt
-        kill "$SERVER_PID" 2>/dev/null
-        continue
-    fi
-    
-    echo "Server UP. Uploading batch..."
-    
-    # Execute batch upload
-    RESPONSE=$(curl -s -X POST "$UPLOAD_ENDPOINT" \
+    # Execute batch upload with approach as form data
+    RESPONSE=$(curl -s -X POST "${UPLOAD_ENDPOINT}" \
       -H "accept: application/json" \
       -H "Content-Type: multipart/form-data" \
+      -F "approach=${strategy}" \
       $CURL_ARGS)
       
     JOB_ID=$(get_json_value "$RESPONSE" "job_id")
@@ -105,13 +109,13 @@ for strategy in "${STRATEGIES[@]}"; do
                 echo "Posters Evaluation Results (Rankings) - $label" >> "$OUTPUT_FILE"
                 
                 # Save raw JSON for debugging
-                echo "$JOB_STATUS_JSON" > "bin/${ID}_json_output.json"
+                echo "$JOB_STATUS_JSON" > "bin/${ID}_${strategy}_json_output.json"
                 
                 # Generate Report
                 echo "$JOB_STATUS_JSON" | python bin/verify_report.py --strategy "$strategy" | tee -a "$OUTPUT_FILE"
 
                 # Print final message
-                echo "Posters evaluation complete. Results saved to $OUTPUT_FILE"
+                echo "Posters evaluation complete for $label. Results saved to $OUTPUT_FILE"
                 break
             elif [ "$STATUS" == "failed" ]; then
                 echo "Job failed!"
@@ -124,3 +128,5 @@ for strategy in "${STRATEGIES[@]}"; do
         echo ""
     fi
 done
+
+echo "All evaluations complete!"

@@ -1,17 +1,23 @@
 # prompts.py
-# All prompts and (optional) strict JSON schemas are defined here.
+# All prompts and strict JSON schemas are defined here.
 # The OpenAI client can select the correct prompt/schema by approach name.
 
 from typing import Dict, Any
 
+#### ---------------------------------------------------------- PROMPTS ---------------------------------------------------------- ####
 
 # -----------------------------
 # Direct Approach Prompt
 # -----------------------------
-POSTER_EVALUATION_PROMPT = """
+DIRECT_APPROACH_PROMPT = """
 You are a STRICT and CRITICAL academic poster evaluation expert. Analyze this graduation project poster and answer the following questions exactly as specified.
 
 IMPORTANT: Return your response as a valid JSON object with the exact field names specified below.
+
+CRITICAL RED FLAGS (MANDATORY PENALTIES):
+- TITLE MISMATCH: If the Title contradicts the Body (bait-and-switch), Q2 and Q13 MUST be 0.
+- EVIDENCE GAP: If Results contain NO numerical metrics, NO tables, and NO statistical comparisons (qualitative/screenshots ONLY), Q15 and Q16 MUST be 0 or 2 maximum.
+- RECOGNITION ONLY: If the "Methodology" is just a list of software used without describing the actual ALGORITHM or architecture, Q7 MUST be 0 or 2 maximum.
 
 Analyze the poster and provide:
 
@@ -91,7 +97,7 @@ Return response in this exact JSON format:
 # -----------------------------
 # Reasoning Approach Prompt
 # -----------------------------
-POSTER_EVALUATION_WITH_EXPLANATION_PROMPT = """
+REASONING_APPROACH_PROMPT = """
 You are a HARSH and SKEPTICAL academic poster evaluation expert.
 Your goal is to expose weaknesses. High scores are RARE (top 5%).
 Most posters should fall in the middle or low range.
@@ -101,6 +107,11 @@ CRITICAL SCORING RULES:
 2. NO "Benefit of the Doubt". If something is vague, it is BAD.
 3. If a required element is missing, the score is AUTOMATICALLY the lowest option.
 4. "Good" means PERFECT compliance. "Excellent" means EXCEPTIONAL, publication-ready quality.
+
+CRITICAL RED FLAGS (MANDATORY PENALTIES):
+- TITLE MISMATCH: If the Title contradicts the Body (bait-and-switch), Q2 and Q13 MUST be 0.
+- EVIDENCE GAP: If Results contain NO numerical metrics, NO tables, and NO statistical comparisons (qualitative/screenshots ONLY), Q15 and Q16 MUST be 0 or 2 maximum.
+- RECOGNITION ONLY: If the "Methodology" is just a list of software used without describing the actual ALGORITHM or architecture, Q7 MUST be 0 or 2 maximum.
 
 Rubric Application:
 - If text is too small to read casually -> Score lowest on readability.
@@ -255,9 +266,9 @@ Explanation: meaningful interpretation of results.
 
 
 # -----------------------------
-# Deep Analysis Approach
+# Deep Analysis Approach Prompts
 # -----------------------------
-PHASE1_ANALYSIS_PROMPT = """
+DEEP_ANALYSIS_APPROACH_PHASE1_PROMPT = """
 You are an objective academic poster analyzer. Your job is to carefully examine this graduation project poster and document FACTUAL OBSERVATIONS for each evaluation criterion.
 
 CRITICAL: Do NOT assign any grades or scores. Only collect evidence.
@@ -366,11 +377,18 @@ Return response in this exact JSON format:
 """.strip()
 
 
-PHASE2_GRADING_PROMPT = """
+DEEP_ANALYSIS_APPROACH_PHASE2_PROMPT = """
 You are a HARSH and SKEPTICAL academic poster evaluation expert.
 You have received an objective analysis of a graduation project poster.
 Your goal is to expose weaknesses. High scores are RARE (top 5%).
 Most posters should fall in the middle or low range.
+
+INPUT STRUCTURE FROM PHASE 1:
+You will receive a JSON object containing:
+- project_number, advisor_name, presenter_names (metadata)
+- question_analysis: dict with keys Q1-Q16, each containing:
+  {"strengths": [...], "weaknesses": [...], "evidence": "..."}
+Use this analysis to assign grades. Return the scoring with grade explanations.
 
 CRITICAL SCORING RULES:
 1. START AT ZERO for every question. The poster must EARN every point with visible evidence.
@@ -514,9 +532,9 @@ Return response in this exact JSON format:
 
 
 # -----------------------------
-# Strict Approach Prompt + Schema
+# Strict Approach Prompt
 # -----------------------------
-STRICT_POSTER_EVALUATION_PROMPT = """
+STRICT_APPROACH_PROMPT = """
 You are a HARSH and SKEPTICAL academic poster evaluation expert.
 Your goal is to expose weaknesses. High scores are RARE (top 5%).
 Most posters should fall in the middle or low range.
@@ -666,58 +684,12 @@ Q16 (Results presentation & interpretation) (0/2/5/8)
 FINAL RULE: Ensure your assigned SCORES are logically consistent with your CRITIQUE. If you write "there are no metrics," you MUST NOT assign a score higher than 2 for Q15/Q16.
 """.strip()
 
+#### ---------------------------------------------------------- JSON SCHEMAS ----------------------------------------------------- ####
 
-POSTER_EVALUATION_JSON_SCHEMA = {
-    "name": "poster_evaluation",
-    "strict": True,
-    "schema": {
-        "type": "object",
-        "additionalProperties": False,
-        "properties": {
-            "project_number": {"type": "string"},
-            "advisor_name": {"type": "string"},
-            "presenter_names": {"type": "string"},
-
-            "Q1": {"type": "integer", "enum": [0, 1, 3, 5, 7]},
-            "Q2": {"type": "integer", "enum": [0, 2, 5, 8]},
-            "Q3": {"type": "integer", "enum": [0, 1, 3, 5]},
-            "Q4": {"type": "integer", "enum": [0, 1, 3, 5]},
-
-            "Q5": {"type": "integer", "enum": [0, 2, 5, 8]},
-            "Q6": {"type": "integer", "enum": [0, 2, 4, 6]},
-            "Q7": {"type": "integer", "enum": [0, 2, 4, 6]},
-
-            "Q8": {"type": "integer", "enum": [0, 2, 4, 6]},
-            "Q9": {"type": "integer", "enum": [0, 1, 3, 5]},
-            "Q10": {"type": "integer", "enum": [0, 2, 3, 4]},
-
-            "Q11": {"type": "integer", "enum": [0, 1, 3, 5]},
-            "Q12": {"type": "integer", "enum": [0, 3, 7, 10]},
-            "Q13": {"type": "integer", "enum": [0, 1, 3, 5]},
-            "Q14": {"type": "integer", "enum": [0, 1, 3, 5]},
-
-            "Q15": {"type": "integer", "enum": [0, 2, 5, 7]},
-            "Q16": {"type": "integer", "enum": [0, 2, 5, 8]},
-
-            "poster_summary": {"type": "string"},
-            "evaluation_summary": {"type": "string"},
-            "overall_opinion": {"type": "string"}
-        },
-        "required": [
-            "project_number", "advisor_name", "presenter_names",
-            "Q1", "Q2", "Q3", "Q4",
-            "Q5", "Q6", "Q7",
-            "Q8", "Q9", "Q10",
-            "Q11", "Q12", "Q13", "Q14",
-            "Q15", "Q16",
-            "poster_summary", "evaluation_summary", "overall_opinion"
-        ]
-    }
-}
-
-
+# -----------------------------
 # Direct Approach Schema
-DIRECT_EVALUATION_JSON_SCHEMA = {
+# -----------------------------
+DIRECT_APPROACH_JSON_SCHEMA = {
     "name": "poster_evaluation_direct",
     "strict": True,
     "schema": {
@@ -727,22 +699,22 @@ DIRECT_EVALUATION_JSON_SCHEMA = {
             "project_number": {"type": "string"},
             "advisor_name": {"type": "string"},
             "presenter_names": {"type": "string"},
-            "Q1": {"type": "integer"},
-            "Q2": {"type": "integer"},
-            "Q3": {"type": "integer"},
-            "Q4": {"type": "integer"},
-            "Q5": {"type": "integer"},
-            "Q6": {"type": "integer"},
-            "Q7": {"type": "integer"},
-            "Q8": {"type": "integer"},
-            "Q9": {"type": "integer"},
-            "Q10": {"type": "integer"},
-            "Q11": {"type": "integer"},
-            "Q12": {"type": "integer"},
-            "Q13": {"type": "integer"},
-            "Q14": {"type": "integer"},
-            "Q15": {"type": "integer"},
-            "Q16": {"type": "integer"},
+            "Q1": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q2": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q3": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q4": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q5": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q6": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q7": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q8": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q9": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q10": {"type": "integer", "enum": [0, 2, 3, 4]},
+            "Q11": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q12": {"type": "integer", "enum": [0, 3, 7, 10]},
+            "Q13": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q14": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q15": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q16": {"type": "integer", "enum": [0, 2, 5, 8]},
             "poster_summary": {"type": "string"},
             "evaluation_summary": {"type": "string"},
             "overall_opinion": {"type": "string"}
@@ -757,9 +729,10 @@ DIRECT_EVALUATION_JSON_SCHEMA = {
     }
 }
 
-
+# -----------------------------
 # Reasoning Approach Schema
-REASONING_EVALUATION_JSON_SCHEMA = {
+# -----------------------------
+REASONING_APPROACH_JSON_SCHEMA = {
     "name": "poster_evaluation_reasoning",
     "strict": True,
     "schema": {
@@ -769,22 +742,22 @@ REASONING_EVALUATION_JSON_SCHEMA = {
             "project_number": {"type": "string"},
             "advisor_name": {"type": "string"},
             "presenter_names": {"type": "string"},
-            "Q1": {"type": "integer"},
-            "Q2": {"type": "integer"},
-            "Q3": {"type": "integer"},
-            "Q4": {"type": "integer"},
-            "Q5": {"type": "integer"},
-            "Q6": {"type": "integer"},
-            "Q7": {"type": "integer"},
-            "Q8": {"type": "integer"},
-            "Q9": {"type": "integer"},
-            "Q10": {"type": "integer"},
-            "Q11": {"type": "integer"},
-            "Q12": {"type": "integer"},
-            "Q13": {"type": "integer"},
-            "Q14": {"type": "integer"},
-            "Q15": {"type": "integer"},
-            "Q16": {"type": "integer"},
+            "Q1": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q2": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q3": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q4": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q5": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q6": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q7": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q8": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q9": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q10": {"type": "integer", "enum": [0, 2, 3, 4]},
+            "Q11": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q12": {"type": "integer", "enum": [0, 3, 7, 10]},
+            "Q13": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q14": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q15": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q16": {"type": "integer", "enum": [0, 2, 5, 8]},
             "grade_explanation": {
                 "type": "object",
                 "additionalProperties": False,
@@ -824,8 +797,10 @@ REASONING_EVALUATION_JSON_SCHEMA = {
 }
 
 
-# Deep Analysis Phase 1 Schema
-DEEP_PHASE1_JSON_SCHEMA = {
+# ---------------------------------------------
+# Deep Analysis Approach Phase 1 Schema
+# ---------------------------------------------
+DEEP_ANALYSIS_APPROACH_PHASE1_JSON_SCHEMA = {
     "name": "poster_analysis_phase1",
     "strict": True,
     "schema": {
@@ -1014,31 +989,32 @@ DEEP_PHASE1_JSON_SCHEMA = {
     }
 }
 
-
-# Deep Analysis Phase 2 Schema
-DEEP_PHASE2_JSON_SCHEMA = {
+# ---------------------------------------------
+# Deep Analysis Approach Phase 2 Schema
+# ---------------------------------------------
+DEEP_ANALYSIS_APPROACH_PHASE2_JSON_SCHEMA = {
     "name": "poster_grading_phase2",
     "strict": True,
     "schema": {
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "Q1": {"type": "integer"},
-            "Q2": {"type": "integer"},
-            "Q3": {"type": "integer"},
-            "Q4": {"type": "integer"},
-            "Q5": {"type": "integer"},
-            "Q6": {"type": "integer"},
-            "Q7": {"type": "integer"},
-            "Q8": {"type": "integer"},
-            "Q9": {"type": "integer"},
-            "Q10": {"type": "integer"},
-            "Q11": {"type": "integer"},
-            "Q12": {"type": "integer"},
-            "Q13": {"type": "integer"},
-            "Q14": {"type": "integer"},
-            "Q15": {"type": "integer"},
-            "Q16": {"type": "integer"},
+            "Q1": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q2": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q3": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q4": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q5": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q6": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q7": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q8": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q9": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q10": {"type": "integer", "enum": [0, 2, 3, 4]},
+            "Q11": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q12": {"type": "integer", "enum": [0, 3, 7, 10]},
+            "Q13": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q14": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q15": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q16": {"type": "integer", "enum": [0, 2, 5, 8]},
             "grade_explanation": {
                 "type": "object",
                 "additionalProperties": False,
@@ -1073,7 +1049,56 @@ DEEP_PHASE2_JSON_SCHEMA = {
 }
 
 
-# Strict Approach Schema (already defined above)
+# -----------------------------
+# Strict Approach Schema
+# -----------------------------
+STRICT_APPROACH_JSON_SCHEMA = {
+    "name": "poster_evaluation",
+    "strict": True,
+    "schema": {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "project_number": {"type": "string"},
+            "advisor_name": {"type": "string"},
+            "presenter_names": {"type": "string"},
+
+            "Q1": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q2": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q3": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q4": {"type": "integer", "enum": [0, 1, 3, 5]},
+
+            "Q5": {"type": "integer", "enum": [0, 2, 5, 8]},
+            "Q6": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q7": {"type": "integer", "enum": [0, 2, 4, 6]},
+
+            "Q8": {"type": "integer", "enum": [0, 2, 4, 6]},
+            "Q9": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q10": {"type": "integer", "enum": [0, 2, 3, 4]},
+
+            "Q11": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q12": {"type": "integer", "enum": [0, 3, 7, 10]},
+            "Q13": {"type": "integer", "enum": [0, 1, 3, 5]},
+            "Q14": {"type": "integer", "enum": [0, 1, 3, 5]},
+
+            "Q15": {"type": "integer", "enum": [0, 2, 5, 7]},
+            "Q16": {"type": "integer", "enum": [0, 2, 5, 8]},
+
+            "poster_summary": {"type": "string"},
+            "evaluation_summary": {"type": "string"},
+            "overall_opinion": {"type": "string"}
+        },
+        "required": [
+            "project_number", "advisor_name", "presenter_names",
+            "Q1", "Q2", "Q3", "Q4",
+            "Q5", "Q6", "Q7",
+            "Q8", "Q9", "Q10",
+            "Q11", "Q12", "Q13", "Q14",
+            "Q15", "Q16",
+            "poster_summary", "evaluation_summary", "overall_opinion"
+        ]
+    }
+}
 
 
 # -----------------------------
@@ -1081,23 +1106,23 @@ DEEP_PHASE2_JSON_SCHEMA = {
 # -----------------------------
 PROMPT_REGISTRY: Dict[str, Dict[str, Any]] = {
     "direct": {
-        "prompt": POSTER_EVALUATION_PROMPT,
-        "json_schema": DIRECT_EVALUATION_JSON_SCHEMA,
+        "prompt": DIRECT_APPROACH_PROMPT,
+        "json_schema": DIRECT_APPROACH_JSON_SCHEMA,
     },
     "reasoning": {
-        "prompt": POSTER_EVALUATION_WITH_EXPLANATION_PROMPT,
-        "json_schema": REASONING_EVALUATION_JSON_SCHEMA,
+        "prompt": REASONING_APPROACH_PROMPT,
+        "json_schema": REASONING_APPROACH_JSON_SCHEMA,
     },
     "deep_phase1": {
-        "prompt": PHASE1_ANALYSIS_PROMPT,
-        "json_schema": DEEP_PHASE1_JSON_SCHEMA,
+        "prompt": DEEP_ANALYSIS_APPROACH_PHASE1_PROMPT,
+        "json_schema": DEEP_ANALYSIS_APPROACH_PHASE1_JSON_SCHEMA,
     },
     "deep_phase2": {
-        "prompt": PHASE2_GRADING_PROMPT,
-        "json_schema": DEEP_PHASE2_JSON_SCHEMA,
+        "prompt": DEEP_ANALYSIS_APPROACH_PHASE2_PROMPT,
+        "json_schema": DEEP_ANALYSIS_APPROACH_PHASE2_JSON_SCHEMA,
     },
     "strict": {
-        "prompt": STRICT_POSTER_EVALUATION_PROMPT,
-        "json_schema": POSTER_EVALUATION_JSON_SCHEMA,
+        "prompt": STRICT_APPROACH_PROMPT,
+        "json_schema": STRICT_APPROACH_JSON_SCHEMA,
     },
 }
