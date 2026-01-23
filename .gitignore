@@ -47,21 +47,12 @@ Thumbs.db
 # Project specific
 uploads/
 downloads/
-*.jpg
-# *.jpeg
-*.png
 *.pdf
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
-
-# Docker
-.dockerignore
-
-# Cache
-.cache
 
 # Bin
 bin/*.txt
