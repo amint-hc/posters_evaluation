@@ -13,6 +13,7 @@ from .models.poster_data import (
     EvaluationJob, 
     ProcessingStatus
 )
+from .exceptions import OpenAIAPIError
 
 class AsyncPosterEvaluator:
     """Async poster evaluation engine for FastAPI"""
@@ -54,8 +55,16 @@ class AsyncPosterEvaluator:
             self.jobs[job_id].status = status
             self.jobs[job_id].updated_at = datetime.utcnow()
     
-    async def evaluate_poster(self, image_path: Path) -> Tuple[Optional[PosterEvaluation], ProcessingLog]:
-        """Evaluate a single poster image using the configured strategy"""
+    async def evaluate_poster(self, image_path: Path, approach: str = "direct") -> Tuple[Optional[PosterEvaluation], ProcessingLog]:
+        """Evaluate a single poster image using the specified strategy
+        
+        Args:
+            image_path: Path to poster image file
+            approach: Evaluation approach to use (direct, reasoning, deep_analysis, strict)
+            
+        Raises:
+            OpenAIAPIError: When OpenAI API calls fail (authentication, rate limit, timeout, etc.)
+        """
         start_time = time.time()
         processing_log = ProcessingLog(
             file=image_path.name,
@@ -66,8 +75,8 @@ class AsyncPosterEvaluator:
         )
         
         try:
-            # Get strategy based on client configuration
-            strategy = get_strategy(self.client.evaluation_approach)
+            # Get strategy based on specified approach
+            strategy = get_strategy(approach)
             
             # Execute strategy
             data = await strategy.evaluate(self.client, image_path)
@@ -84,6 +93,10 @@ class AsyncPosterEvaluator:
             
             return evaluation, processing_log
             
+        except OpenAIAPIError as e:
+            # Re-raise OpenAI API errors to stop batch processing
+            print(f"OpenAI API Error evaluating {image_path.name}: {str(e)}")
+            raise
         except Exception as e:
             print(f"Error evaluating {image_path.name}: {str(e)}")
             import traceback
@@ -104,31 +117,63 @@ class AsyncPosterEvaluator:
         
         return evaluation
     
-    async def evaluate_batch(self, job_id: str, image_paths: List[Path]) -> List[PosterEvaluation]:
-        """Evaluate batch of posters with job tracking"""
+    async def evaluate_batch(self, job_id: str, image_paths: List[Path], approach: str = "direct") -> List[PosterEvaluation]:
+        """Evaluate batch of posters with job tracking
+        
+        Args:
+            job_id: Job identifier
+            image_paths: List of paths to poster images
+            approach: Evaluation approach to use (direct, reasoning, deep_analysis, strict)
+            
+        Stops evaluation immediately if OpenAI API calls fail.
+        """
         self.update_job_status(job_id, ProcessingStatus.PROCESSING)
         
         results = []
         errors = []
+        stop_event = asyncio.Event()  # Event to signal stop on OpenAI failure
         
         # Process images concurrently (with rate limiting)
         semaphore = asyncio.Semaphore(3)  # Limit concurrent API calls
         
         async def process_single_poster(image_path: Path):
             async with semaphore:
-                evaluation, processing_log = await self.evaluate_poster(image_path)
+                # Check if we've already failed
+                if stop_event.is_set():
+                    return
                 
-                if evaluation:
-                    results.append(evaluation)
-                else:
-                    errors.append(f"Failed to process {image_path.name}")
-                
-                # Update job progress and logs
-                job = self.get_job(job_id)
-                if job:
-                    job.processed_files += 1
-                    job.updated_at = datetime.utcnow()
-                    job.processing_logs.append(processing_log)
+                try:
+                    evaluation, processing_log = await self.evaluate_poster(image_path, approach)
+                    
+                    if evaluation:
+                        results.append(evaluation)
+                    else:
+                        errors.append(f"Failed to process {image_path.name}")
+                    
+                    # Update job progress and logs
+                    job = self.get_job(job_id)
+                    if job:
+                        job.processed_files += 1
+                        job.updated_at = datetime.utcnow()
+                        job.processing_logs.append(processing_log)
+                        
+                except OpenAIAPIError as e:
+                    # Signal all other tasks to stop
+                    print(f"Critical OpenAI API failure detected. Stopping batch evaluation.")
+                    stop_event.set()
+                    # Add error to logs
+                    processing_log = ProcessingLog(
+                        file=image_path.name,
+                        status="failed",
+                        grade=None,
+                        duration_ms=None,
+                        error=str(e)
+                    )
+                    errors.append(f"OpenAI API Error: {str(e)}")
+                    job = self.get_job(job_id)
+                    if job:
+                        job.processing_logs.append(processing_log)
+                    raise  # Re-raise to propagate the failure
         
         # Handle empty batch case first
         if not image_paths:
@@ -139,7 +184,24 @@ class AsyncPosterEvaluator:
             
         # Process non-empty batch
         tasks = [process_single_poster(path) for path in image_paths]
-        await asyncio.gather(*tasks, return_exceptions=True)
+        
+        try:
+            # Gather all tasks but allow the OpenAIAPIError to propagate
+            await asyncio.gather(*tasks, return_exceptions=False)
+        except OpenAIAPIError as e:
+            # Add critical OpenAI API error to errors list
+            error_message = f"OpenAI API Error: {str(e)}"
+            errors.append(error_message)
+            
+            # Update job with failure status
+            if job_id in self.jobs:
+                job = self.jobs[job_id]
+                job.status = ProcessingStatus.FAILED
+                job.results = results
+                job.errors = errors
+                job.updated_at = datetime.utcnow()
+                print(f"Job {job_id} stopped due to OpenAI API failure: {str(e)}")
+            return results
         
         # Sort results by grade if we have any
         if results:

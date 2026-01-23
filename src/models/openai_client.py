@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional, Tuple
 from openai import AsyncOpenAI
 
 from src.models.prompts import PROMPT_REGISTRY
+from src.exceptions import OpenAIAPIError
 
 class AsyncOpenAIVisionClient:
     """
@@ -25,23 +26,14 @@ class AsyncOpenAIVisionClient:
         self.client = AsyncOpenAI(api_key=api_key)
 
         # Model/config
-        self.model = os.getenv("OPENAI_MODEL", "gpt-5.1")
-        self.max_completion_tokens = int(os.getenv("MAX_COMPLETION_TOKENS", "4096"))
+        self.model = os.getenv("OPENAI_MODEL", "gpt-4.1")
+        self.max_tokens = int(os.getenv("MAX_TOKENS", "4096"))
 
         # For stability
         self.temperature = float(os.getenv("TEMPERATURE", "0.0"))
-        self.top_p = float(os.getenv("TOP_P", "1.0"))
-        self.presence_penalty = float(os.getenv("PRESENCE_PENALTY", "0.0"))
-        self.frequency_penalty = float(os.getenv("FREQUENCY_PENALTY", "0.0"))
-
-        # Seed helps but may not guarantee perfect determinism for vision
-        self.seed = int(os.getenv("OPENAI_SEED", "42"))
 
         # Timeout for API calls
         self.timeout = int(os.getenv("TIMEOUT_SECONDS", "180"))
-        
-        # Evaluation approach strategy
-        self.evaluation_approach = os.getenv("EVALUATION_APPROACH", "direct")
 
     async def encode_image(self, image_path: Path) -> str:
         """Read and encode image as base64 string"""
@@ -102,12 +94,8 @@ class AsyncOpenAIVisionClient:
         request_kwargs: Dict[str, Any] = dict(
             model=self.model,
             messages=messages,
-            max_completion_tokens=self.max_completion_tokens,
+            max_tokens=self.max_tokens,
             temperature=self.temperature,
-            top_p=self.top_p,
-            presence_penalty=self.presence_penalty,
-            frequency_penalty=self.frequency_penalty,
-            seed=self.seed,
         )
 
         if json_schema is not None:
@@ -132,21 +120,21 @@ class AsyncOpenAIVisionClient:
                 "usage": response.usage.dict() if response.usage else None,
                 "approach": approach,
                 "model": self.model,
-                "seed": self.seed,
                 "temperature": self.temperature,
             }
 
         except asyncio.TimeoutError:
-            raise Exception(f"OpenAI API timeout after {self.timeout} seconds")
+            raise OpenAIAPIError(f"OpenAI API timeout after {self.timeout} seconds")
         except Exception as e:
             msg = str(e).lower()
             if "authentication" in msg or "api_key" in msg:
-                raise Exception("OpenAI API authentication failed. Please check your API key.")
+                raise OpenAIAPIError("OpenAI API authentication failed. Please check your API key.")
             if "rate limit" in msg:
-                raise Exception("OpenAI API rate limit exceeded. Please try again later.")
+                raise OpenAIAPIError("OpenAI API rate limit exceeded. Please try again later.")
             if "response_format" in msg or "json_schema" in msg:
-                raise Exception(
+                raise OpenAIAPIError(
                     "Your current endpoint/model/sdk might not support json_schema in chat.completions. "
                     "Solution: use the Responses API for Structured Outputs, or remove json_schema for that approach."
                 )
-            raise Exception(f"OpenAI API error: {str(e)}")
+            # Treat any other API exception as a critical error
+            raise OpenAIAPIError(f"OpenAI API error: {str(e)}")

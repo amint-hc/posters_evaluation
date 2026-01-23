@@ -2,7 +2,7 @@ import os
 import shutil
 from typing import List
 from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,21 +18,20 @@ from .models.poster_data import (
 # Initialize FastAPI app
 app = FastAPI(
     title="Poster Evaluation API",
-    description="AI-powered academic poster evaluation system using GPT-5 Vision",
+    description="AI-powered academic poster evaluation system using GPT-4 Vision",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
 
 # Server configuration is now in run.py
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 MAX_FILES_PER_BATCH = int(os.getenv("MAX_FILES_PER_BATCH", "250"))
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -45,6 +44,14 @@ ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 # Ensure directories exist
 UPLOAD_DIR.mkdir(exist_ok=True)
 DOWNLOAD_DIR.mkdir(exist_ok=True)
+
+# Valid Approaches
+VALID_APPROACHES = ["direct", "reasoning", "deep_analysis", "strict"]
+
+# Helper functions
+def validate_approach(approach: str) -> bool:
+    """Validate evaluation approach"""
+    return approach in VALID_APPROACHES
 
 def validate_image_file(file: UploadFile) -> bool:
     """Validate uploaded image file"""
@@ -66,8 +73,13 @@ async def save_uploaded_file(file: UploadFile, job_id: str) -> Path:
     
     return file_path
 
-async def process_evaluation_job(job_id: str):
-    """Background task to process evaluation job"""
+async def process_evaluation_job(job_id: str, approach: str = "direct"):
+    """Background task to process evaluation job
+    
+    Args:
+        job_id: Job identifier
+        approach: Evaluation approach to use (direct, reasoning, deep_analysis, strict)
+    """
     try:
         # Get uploaded files for this job
         job_dir = UPLOAD_DIR / job_id
@@ -80,8 +92,8 @@ async def process_evaluation_job(job_id: str):
             get_evaluator().update_job_status(job_id, ProcessingStatus.FAILED)
             return
         
-        # Process evaluations
-        results = await get_evaluator().evaluate_batch(job_id, image_files)
+        # Process evaluations with specified approach
+        results = await get_evaluator().evaluate_batch(job_id, image_files, approach)
         
         # Get the job to access processing logs
         job = get_evaluator().get_job(job_id)
@@ -98,6 +110,7 @@ async def process_evaluation_job(job_id: str):
         print(f"Error processing job {job_id}: {str(e)}")
         get_evaluator().update_job_status(job_id, ProcessingStatus.FAILED)
 
+# API Endpoints
 @app.get("/", tags=["Health"])
 async def root():
     """Health check endpoint"""
@@ -137,8 +150,16 @@ async def health_check():
 async def upload_single_poster(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    approach: str = Form("direct")
 ):
     """Upload and evaluate a single poster"""
+
+    # Validate approach
+    if not validate_approach(approach):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid approach '{approach}'. Must be one of: {', '.join(VALID_APPROACHES)}"
+        )
     
     if not validate_image_file(file):
         raise HTTPException(
@@ -154,12 +175,12 @@ async def upload_single_poster(
         await save_uploaded_file(file, job_id)
         
         # Start background processing
-        background_tasks.add_task(process_evaluation_job, job_id)
+        background_tasks.add_task(process_evaluation_job, job_id, approach)
         
         return EvaluationResponse(
             job_id=job_id,
             status=ProcessingStatus.PENDING,
-            message="Poster uploaded successfully. Processing started.",
+            message=f"Poster uploaded successfully. Processing started with approach '{approach}'.",
             results_url=f"/jobs/{job_id}/results"
         )
         
@@ -174,8 +195,21 @@ async def upload_batch_posters(
         description="Select multiple poster files to evaluate. Accepts JPG, JPEG, and PNG files.",
         media_type="image/*",
     ),
+    approach: str = Form("direct")
 ):
-    """Upload and evaluate multiple posters. Allows selecting multiple files at once."""
+    """Upload and evaluate multiple posters. Allows selecting multiple files at once.
+    
+    Args:
+        files: List of poster image files
+        approach: Evaluation approach to use (direct, reasoning, deep_analysis, strict). Defaults to 'direct'.
+    """
+    # Validate approach
+    if not validate_approach(approach):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid approach '{approach}'. Must be one of: {', '.join(VALID_APPROACHES)}"
+        )
+    
     if len(files) > MAX_FILES_PER_BATCH:
         raise HTTPException(status_code=400, detail=f"Too many files. Maximum {MAX_FILES_PER_BATCH} files per batch.")
 
@@ -200,14 +234,14 @@ async def upload_batch_posters(
         for file in valid_files:
             await save_uploaded_file(file, job_id)
         
-        # Start background processing
-        background_tasks.add_task(process_evaluation_job, job_id)
+        # Start background processing with approach
+        background_tasks.add_task(process_evaluation_job, job_id, approach)
         
         return BatchUploadResponse(
             job_id=job_id,
             uploaded_files=[f.filename for f in valid_files],
             skipped_files=skipped_files,
-            message=f"Batch upload successful. {len(valid_files)} files uploaded, {len(skipped_files)} skipped."
+            message=f"Batch upload successful. {len(valid_files)} files uploaded, {len(skipped_files)} skipped. Using '{approach}' approach."
         )
         
     except Exception as e:
@@ -306,6 +340,23 @@ async def download_run_log(job_id: str):
         path=file_path,
         filename="run_log.jsonl",
         media_type="application/jsonl"
+    )
+
+@app.get("/jobs/{job_id}/download/excel", tags=["Downloads"])
+async def download_excel_results(job_id: str):
+    """Download Excel results file"""
+    job = get_evaluator().get_job(job_id)
+    if not job or job.status != ProcessingStatus.COMPLETED:
+        raise HTTPException(status_code=404, detail="Results not available")
+    
+    file_path = DOWNLOAD_DIR / job_id / "results_comparison.xlsx"
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Excel results file not found")
+    
+    return FileResponse(
+        path=file_path,
+        filename="results_comparison.xlsx",
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 @app.get("/jobs/{job_id}/download/breakdown/{filename}", tags=["Downloads"])
