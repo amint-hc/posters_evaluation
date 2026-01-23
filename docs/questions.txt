@@ -1,0 +1,119 @@
+Final Question Set 
+
+Category 1: Content Quality (25 points)
+1. How well is the introduction written?
+Scoring:
+•	Excellent (7)
+•	Good (5)
+•	Weak (2)
+•	Poor (0)
+2. Does the introduction clearly relate to the poster topic?
+(Relation between intro and poster, relevance, added value)
+Scoring:
+•	Excellent match (8)
+•	Partial match (5)
+•	Weak match (2)
+•	No match (0)
+3. Is the purpose of the project clearly stated?
+(Clarity of purpose)
+Scoring:
+•	Very clear (5)
+•	Clear (3)
+•	Partially clear (1)
+•	Not clear (0)
+4. Is all content relevant? Are there irrelevant sources or information?
+Scoring:
+•	Fully relevant (5)
+•	Mostly relevant (3)
+•	Some irrelevant parts (1)
+•	Many irrelevant parts (0)
+Subtotal: 25 points
+
+Category 2 : Research & Understanding (20 points)
+5. Does the poster demonstrate deep understanding of the topic?
+Scoring:
+•	Excellent understanding (8)
+•	Good understanding (5)
+•	Basic understanding (2)
+•	Weak understanding (0)
+6. Are the references used appropriate and connected to the poster content?
+(Relevance of sources, connection to poster)
+Scoring:
+•	Highly relevant and well-connected (6)
+•	Mostly relevant (4)
+•	Partially relevant (2)
+•	Not relevant (0)
+7. Is the methodology/implementation described clearly and in detail?
+Scoring:
+•	Very detailed and clear (6)
+•	Clear but missing some details (4)
+•	Weak or unclear (2)
+•	Not described (0)
+Subtotal: 20 points
+
+Category 3: Visual Quality & Graphs (15 points)
+8. Are the graphs readable and clear (axes, labels, legend)?
+(Axes clarity, visibility)
+Scoring:
+•	Excellent clarity (6)
+•	Good clarity (4)
+•	Low clarity (2)
+•	Not clear or missing (0)
+9. Do the graphs contribute meaningful information to the project?
+(Relevance of graphs)
+Scoring:
+•	Highly relevant (5)
+•	Moderately relevant (3)
+•	Weak relevance (1)
+•	Not relevant (0)
+10. Overall visual quality of the poster (layout, readability).
+Scoring:
+•	Excellent (4)
+•	Good (3)
+•	Acceptable (2)
+•	Poor (0)
+Subtotal: 15 points
+
+Category 4: Structure & Logical Flow (25 points)
+11. Is there a strong connection between the introduction and the motivation?
+Scoring:
+•	Excellent connection (5)
+•	Good connection (3)
+•	Weak (1)
+•	None (0)
+12. Are the sections in the poster logically connected?
+(intro → methods → results → conclusions)
+Scoring:
+•	Excellent flow (10)
+•	Good flow (7)
+•	Weak flow (3)
+•	No flow (0)
+13. Is the explanation in each section consistent with the rest of the poster?
+Scoring:
+•	Fully consistent (5)
+•	Mostly consistent (3)
+•	Some inconsistencies (1)
+•	Not consistent (0)
+14. Does the poster add new and relevant information beyond the introduction?
+(Does the intro explain or add actual value?)
+Scoring:
+•	Adds significant value (5)
+•	Adds some value (3)
+•	Adds little (1)
+•	Adds none (0)
+Subtotal: 25 points
+
+Category 5: Results & Conclusions (15 points)
+15. Are the conclusions strongly connected to the results?
+Scoring:
+•	Strong connection (7)
+•	Good connection (5)
+•	Weak connection (2)
+•	No connection (0)
+16. Are the results clearly explained and meaningful?
+Scoring:
+•	Excellent clarity (8)
+•	Good (5)
+•	Partial (2)
+•	Weak (0)
+Subtotal: 15 points
