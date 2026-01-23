@@ -70,9 +70,17 @@ Follow these steps to install and set up the system:
 
 #### Step 1: Clone the Repository
 
+If you haven't already, clone the repository to your local machine:
+
 ```bash
 git clone https://github.com/amint-hc/posters_evaluation.git
 cd posters_evaluation
+```
+
+If you already have the code, pull the latest changes:
+
+```bash
+git pull
 ```
 
 #### Step 2: Create Virtual Environment
