@@ -29,7 +29,7 @@ This system was developed as a graduation project to automate the evaluation of 
 
 ### Project Screenshot
 
-![Project Screenshot](docs/project_ui.png)
+![Project Screenshot](docs/project.png)
 
 ## File Structure
 
