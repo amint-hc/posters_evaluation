@@ -76,7 +76,7 @@ Follow these steps to install and set up the system:
 If you haven't already, clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/amint-hc/posters_evaluation.git
+git clone https://github.com/MahmoudMasri0/posters_evaluation_final.git
 cd posters_evaluation
 ```
 
