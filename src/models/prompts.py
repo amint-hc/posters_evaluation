@@ -269,85 +269,48 @@ Explanation: meaningful interpretation of results.
 # Deep Analysis Approach Prompts
 # -----------------------------
 DEEP_ANALYSIS_APPROACH_PHASE1_PROMPT = """
-You are an objective academic poster analyzer. Your job is to carefully examine this graduation project poster and document FACTUAL OBSERVATIONS for each evaluation criterion.
+You are an objective poster analyzer. Examine the poster and document OBSERVATIONS for each criterion.
 
-CRITICAL: Do NOT assign any grades or scores. Only collect evidence.
+CRITICAL: Do NOT assign grades. Only collect evidence: strengths, weaknesses, and specific observations.
 
-For each question below, provide:
-1. STRENGTHS: What the poster demonstrates well in this area
-2. WEAKNESSES: What is missing, unclear, or could be improved
-3. EVIDENCE: Specific observations from the poster (cite text, figures, sections)
+Extract metadata:
+- Project Number (format x-x-x-x) -> field: "project_number"
+- Advisor Name -> field: "advisor_name"
+- Presenter Names (join with " and ") -> field: "presenter_names"
 
-Analyze the poster and provide:
+For each question Q1-Q16 below, provide ONLY:
+1. strengths: List of 1-3 key strengths
+2. weaknesses: List of 1-3 key weaknesses  
+3. evidence: 1-2 sentence specific observation
 
-1. METADATA:
-   - Extract "Project Number" (format x-x-x-x) -> field: "project_number"
-   - Extract "Advisor Name" -> field: "advisor_name" 
-   - Extract "Presenter Name(s)" (join with " and ") -> field: "presenter_names"
+Questions:
+Q1: Intro clarity - How clear and well-structured is the introduction?
+Q2: Intro connection - Does intro logically connect to the poster's topic?
+Q3: Purpose clarity - Does poster communicate project objective clearly?
+Q4: Content focus - Is content relevant and free of unnecessary information?
+Q5: Topic understanding - Does poster show solid understanding of topic?
+Q6: Reference quality - Are references appropriate and well-connected?
+Q7: Methodology - Are methodology steps clearly and sufficiently described?
+Q8: Graph clarity - Are graphs clear, readable, and properly labeled?
+Q9: Graph relevance - Do graphs effectively support the message?
+Q10: Visual coherence - Is layout, spacing, and color use coherent?
+Q11: Intro-motivation link - Does poster connect introduction to motivation?
+Q12: Section flow - Is logical flow between sections smooth and clear?
+Q13: Consistency - Are explanations consistent across sections?
+Q14: Info depth - Does poster add meaningful info beyond introduction?
+Q15: Conclusion support - Are conclusions supported by results?
+Q16: Results clarity - Are results presented clearly and meaningfully?
 
-2. CATEGORY 1: Content Quality (25 points):
-   - Q1: Introduction clarity and structure
-     Analysis: How clear, informative, and well-structured is the introduction in presenting the project context?
-   
-   - Q2: Introduction connection to topic
-     Analysis: To what extent does the introduction establish a meaningful and logical connection to the poster's main topic?
-   
-   - Q3: Purpose communication
-     Analysis: How effectively does the poster communicate the project's main purpose or objective?
-   
-   - Q4: Content relevance
-     Analysis: To what degree is the content focused, relevant, and free of unrelated information?
+Summaries:
+- poster_summary: Up to 4 lines describing the project
+- evaluation_summary: Up to 4 lines summarizing your observations
+- overall_opinion: ONE sentence ending with EXACTLY one of:
+  • "The section's explanations in the poster are clear"
+  • "The poster contains too much verbal information"  
+  • "Visual explanation is missing"
+  • "The poster visuality is good"
 
-3. CATEGORY 2: Research & Understanding (20 points):
-   - Q5: Topic understanding
-     Analysis: How strongly does the poster reflect understanding of the topic, concepts, and underlying ideas?
-   
-   - Q6: References quality
-     Analysis: How appropriate, up-to-date, and clearly connected are the references to the poster's content?
-   
-   - Q7: Methodology description
-     Analysis: How clearly, logically, and sufficiently are the methodology or implementation steps described?
-
-4. CATEGORY 3: Visual Quality & Graphs (15 points):
-   - Q8: Graph clarity
-     Analysis: Assess the clarity, readability, and labeling quality of the graphs (axes, titles, legends, visibility).
-   
-   - Q9: Graph relevance
-     Analysis: How effectively do the graphs support the poster's message and add meaningful insights?
-   
-   - Q10: Overall visual coherence
-     Analysis: Evaluate the overall visual coherence in terms of layout, spacing, color use, and readability.
-
-5. CATEGORY 4: Structure & Logical Flow (25 points):
-   - Q11: Introduction-Motivation link
-     Analysis: How well does the poster build a logical link between the introduction and the motivation?
-   
-   - Q12: Section flow
-     Analysis: How smooth and clear is the logical flow between sections (introduction → methodology → results → conclusions)?
-   
-   - Q13: Consistency
-     Analysis: How consistent, aligned, and logically coherent are the explanations across different poster sections?
-   
-   - Q14: Information depth
-     Analysis: To what extent does the poster add meaningful information beyond what is presented in the introduction?
-
-6. CATEGORY 5: Results & Conclusions (15 points):
-   - Q15: Conclusions support
-     Analysis: How strongly are the conclusions supported by the results and evidence shown in the poster?
-   
-   - Q16: Results clarity
-     Analysis: How clearly and meaningfully are the results presented, interpreted, and explained?
-
-7. SUMMARIES:
-   - poster_summary: Up to 4 lines describing the project
-   - evaluation_summary: Up to 4 lines describing your observations
-   - overall_opinion: One sentence ending with exactly one of:
-     * "The section's explanations in the poster are clear"
-     * "The poster contains too much verbal information"  
-     * "Visual explanation is missing"
-     * "The poster visuality is good"
-
-Return response in this exact JSON format:
+Return ONLY this JSON (no additional text):
 {
   "project_number": "string",
   "advisor_name": "string",

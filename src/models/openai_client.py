@@ -91,10 +91,17 @@ class AsyncOpenAIVisionClient:
         # response_format: use strict schema only when available
         # Depending on your SDK/model, json_schema may be supported in chat.completions.
         # If your environment errors, switch this call to responses.create.
+        
+        # Adjust max_tokens based on approach complexity
+        max_tokens = self.max_tokens
+        if approach in ("deep_phase1", "deep_phase2"):
+            # These approaches generate more complex JSON with 16 questions
+            max_tokens = max(max_tokens, 6000)
+        
         request_kwargs: Dict[str, Any] = dict(
             model=self.model,
             messages=messages,
-            max_tokens=self.max_tokens,
+            max_tokens=max_tokens,
             temperature=self.temperature,
         )
 

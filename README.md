@@ -176,9 +176,13 @@ This command:
    - Choose where to save the file on your computer
    - The Excel file contains a formatted comparison table with all results
 
+6. **Exiting the Application:**
+   - Close the GUI window
+   - The FastAPI server will shut down automatically
+
 ### Testing
 
-You can run GUI with mock data for testing without an OpenAI API key:
+You can run the GUI with mock data for testing without an OpenAI API key:
 
 1. **Run the mock application:**
    
