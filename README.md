@@ -179,6 +179,29 @@ This command:
    - Close the GUI window
    - The FastAPI server will shut down automatically
 
+### Generating a Standalone Executable (.exe)
+
+You can generate a standalone `.exe` file for Windows so that the application can be run without needing Python installed.
+
+1. **Install PyInstaller (if not already installed):**
+
+   ```bash
+   pip install pyinstaller
+   ```
+
+2. **Generate the EXE:**
+   Run the following command in the project root:
+
+   ```bash
+   pyinstaller --noconfirm poster_evaluation.spec
+   ```
+
+3. **Locate the EXE:**
+   The output will be in the `dist/PosterEvaluation/` folder. You can run `PosterEvaluation.exe` from that directory.
+
+   > [!IMPORTANT]
+   > The `_internal` folder in the same directory must be kept with the `.exe` file for it to function correctly.
+
 ### Testing
 
 You can run the GUI with mock data for testing without an OpenAI API key:

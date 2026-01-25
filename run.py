@@ -16,23 +16,30 @@ from gui.app import PosterEvaluationGUI
 load_dotenv()
 
 # Read configuration from environment
-APP_HOST = os.getenv("APP_HOST", "0.0.0.0")
-APP_PORT = int(os.getenv("APP_PORT", "8000"))
+APP_HOST = os.getenv("APP_HOST", "127.0.0.1")
+APP_PORT = int(os.getenv("APP_PORT", "8080"))
 APP_RELOAD = os.getenv("APP_RELOAD", "false").lower() in ("true", "1", "yes")
 APP_LOG_LEVEL = os.getenv("APP_LOG_LEVEL", "info")
 
+from src.main import app as fastapi_app
 
 def run_server():
     """Run FastAPI server in background thread"""
     try:
         print(f"Starting FastAPI server on {APP_HOST}:{APP_PORT}")
-        uvicorn.run(
-            "src.main:app",
+        config = uvicorn.Config(
+            fastapi_app,
             host=APP_HOST,
             port=APP_PORT,
             reload=APP_RELOAD,
             log_level=APP_LOG_LEVEL
         )
+        server = uvicorn.Server(config)
+        
+        # Disable signal handlers for the background thread
+        config.install_signal_handlers = False
+        
+        server.run()
     except Exception as e:
         print(f"Server error: {e}")
 
