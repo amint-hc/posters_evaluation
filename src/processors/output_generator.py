@@ -111,6 +111,80 @@ class AsyncOutputGenerator:
         print(f"Excel results saved to: {filepath}")
         return filepath
     
+    async def generate_comparison_excel(self, combined_results: List[dict]) -> Path:
+        """Generate Excel results file comparing all 4 approaches"""
+        filename = "results_comparison_all.xlsx"
+        filepath = self.download_dir / filename
+        
+        # Create workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Comparison Results"
+        
+        # Define headers (6 columns as in GUI)
+        headers = ["Project Number", "Publisher Names", "Direct", "Reasoning", "Deep Analysis", "Strict"]
+        
+        # Style definitions
+        header_font = Font(bold=True, size=12, color="FFFFFF")
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_alignment = Alignment(horizontal="center", vertical="center")
+        
+        cell_alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        grade_alignment = Alignment(horizontal="center", vertical="center")
+        
+        border_side = Side(style='thin', color='000000')
+        border = Border(left=border_side, right=border_side, top=border_side, bottom=border_side)
+        
+        # Write headers
+        for col_idx, header in enumerate(headers, start=1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+            cell.border = border
+        
+        # Write data
+        for row_idx, result in enumerate(combined_results, start=2):
+            # Project Number
+            cell = ws.cell(row=row_idx, column=1, value=result.get("project_number", "N/A"))
+            cell.alignment = cell_alignment
+            cell.border = border
+            
+            # Publisher Names
+            cell = ws.cell(row=row_idx, column=2, value=result.get("presenter_names", "N/A"))
+            cell.alignment = cell_alignment
+            cell.border = border
+            
+            # Grades (columns 3-6)
+            grade_keys = ["direct_grade", "reasoning_grade", "deep_analysis_grade", "strict_grade"]
+            for col_offset, key in enumerate(grade_keys):
+                grade = result.get(key, 0)
+                cell = ws.cell(row=row_idx, column=3 + col_offset, value=grade)
+                cell.alignment = grade_alignment
+                cell.border = border
+                
+                # Color code grades
+                if grade >= 80:
+                    cell.fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
+                elif grade >= 60:
+                    cell.fill = PatternFill(start_color="FFEB9C", end_color="FFEB9C", fill_type="solid")
+                else:
+                    cell.fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
+        
+        # Adjust column widths
+        ws.column_dimensions['A'].width = 15
+        ws.column_dimensions['B'].width = 35
+        ws.column_dimensions['C'].width = 10
+        ws.column_dimensions['D'].width = 10
+        ws.column_dimensions['E'].width = 15
+        ws.column_dimensions['F'].width = 10
+        
+        # Save workbook
+        wb.save(filepath)
+        
+        print(f"Comparison Excel saved to: {filepath}")
+        return filepath
+    
     async def generate_individual_breakdowns(self, evaluations: List[PosterEvaluation]) -> List[Path]:
         """Generate individual JSON breakdown files"""
         breakdown_files = []

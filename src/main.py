@@ -1,6 +1,7 @@
 import os
 import shutil
-from typing import List
+import uuid
+from typing import List, Dict
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
@@ -374,4 +375,74 @@ async def download_breakdown_file(job_id: str, filename: str):
         path=file_path,
         filename=filename,
         media_type="application/json"
+    )
+
+@app.post("/jobs/compare", tags=["Results"])
+async def generate_comparison_report(job_ids: Dict[str, str]):
+    """Generate a combined comparison report for multiple jobs"""
+    # 1. Validate all jobs exist and are completed
+    all_results = {}
+    for approach, job_id in job_ids.items():
+        if approach not in VALID_APPROACHES:
+            continue
+            
+        job = get_evaluator().get_job(job_id)
+        if not job or job.status != ProcessingStatus.COMPLETED:
+            raise HTTPException(status_code=400, detail=f"Job {job_id} for {approach} is not completed or not found")
+        
+        all_results[approach] = {
+            r.poster_file: r for r in job.results
+        }
+    
+    if not all_results:
+        raise HTTPException(status_code=400, detail="No valid jobs provided for comparison")
+    
+    # 2. Combine results by poster file
+    combined = []
+    first_approach_results = list(all_results.values())[0]
+    for poster_file in first_approach_results.keys():
+        first_result = first_approach_results[poster_file]
+        entry = {
+            "poster_file": poster_file,
+            "project_number": first_result.project_number or "N/A",
+            "presenter_names": first_result.presenter_names or "N/A",
+        }
+        
+        for approach in VALID_APPROACHES:
+            if approach in all_results and poster_file in all_results[approach]:
+                entry[f"{approach}_grade"] = all_results[approach][poster_file].final_grade
+            else:
+                entry[f"{approach}_grade"] = 0
+        
+        combined.append(entry)
+    
+    # 3. Generate Comparison Excel
+    # Use a generic job_id/folder for now, or create a unique ID for the comparison
+    comp_id = f"comp_{uuid.uuid4().hex[:8]}"
+    comp_dir = DOWNLOAD_DIR / comp_id
+    comp_dir.mkdir(parents=True, exist_ok=True)
+    
+    download_gen = AsyncOutputGenerator(comp_dir)
+    excel_path = await download_gen.generate_comparison_excel(combined)
+
+    print("excel_path", excel_path)
+    
+    return {
+        "status": "success",
+        "comparison_id": comp_id,
+        "download_url": f"/downloads/comparison/{comp_id}/results_comparison_all.xlsx",
+        "results": combined
+    }
+
+@app.get("/downloads/comparison/{comp_id}/{filename}", tags=["Downloads"])
+async def download_comparison_file(comp_id: str, filename: str):
+    """Serve generated comparison files"""
+    file_path = DOWNLOAD_DIR / comp_id / filename
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Comparison file not found")
+    
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )

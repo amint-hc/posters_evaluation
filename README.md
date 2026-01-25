@@ -52,7 +52,6 @@ posters_evaluation/
 ├── .env.example            # Environment variables template
 ├── .env                    # Environment configuration (optional, gitignored)
 ├── .secret                 # API key storage (auto-created, gitignored, 7-day expiration)
-├── bin/                    # Verification and utility scripts
 ├── uploads/                # Temporary poster storage (auto-created)
 ├── downloads/              # Generated evaluation results (auto-created)
 └── docs/                   # Documentation and rubric details

@@ -649,15 +649,16 @@ class PosterEvaluationGUI:
         if not save_path:
             return
 
-        first_job_id = list(self.current_job_ids.values())[0]
+
 
         self.update_status("Downloading Excel file…", color=COLORS["muted"])
-        ok = self.client.download_excel(first_job_id, save_path)
+        # Now we download the comparison report using all job IDs
+        ok = self.client.download_comparison_excel(self.current_job_ids, save_path)
         if ok:
             messagebox.showinfo("Success", f"Excel file saved to:\n{save_path}")
             self.update_status("Excel downloaded successfully.", color=COLORS["success"])
         else:
-            messagebox.showerror("Error", "Failed to download Excel file.")
+            messagebox.showerror("Error", f"Failed to download Excel file.\nCheck server logs for details.")
             self.update_status("Error downloading Excel file.", color=COLORS["danger"])
 
     # -----------------------------

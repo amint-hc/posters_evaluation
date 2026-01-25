@@ -54,10 +54,6 @@ downloads/
 .coverage
 htmlcov/
 
-# Bin
-bin/*.txt
-bin/*.json
-
 # Mock
 mock/__pycache__/
 mock/posters/*.xlsx

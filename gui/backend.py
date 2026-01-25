@@ -285,6 +285,52 @@ class EvaluationClient:
             print(f"Error downloading Excel: {e}")
             return False
 
+    def download_comparison_excel(self, job_ids: Dict[str, str], save_path: str) -> bool:
+        """
+        Generate and download comparison Excel file
+        
+        Args:
+            job_ids: Dict mapping approach name to job ID
+            save_path: Path to save Excel file
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # 1. Request comparison report generation
+            response = requests.post(
+                f"{self.base_url}/jobs/compare",
+                json=job_ids,
+                timeout=60
+            )
+            
+            if response.status_code != 200:
+                print(f"Comparison generation failed: {response.status_code} - {response.text}")
+                return False
+                
+            data = response.json()
+            download_url = data.get('download_url')
+            if not download_url:
+                return False
+                
+            # 2. Download the generated file
+            download_response = requests.get(
+                f"{self.base_url}{download_url}",
+                timeout=30
+            )
+            
+            if download_response.status_code == 200:
+                with open(save_path, 'wb') as f:
+                    f.write(download_response.content)
+                return True
+            else:
+                print(f"Comparison download failed: {download_response.status_code}")
+                return False
+                
+        except requests.RequestException as e:
+            print(f"Error in comparison workflow: {e}")
+            return False
+
 
 class ResultsProcessor:
     """Process and format evaluation results"""
