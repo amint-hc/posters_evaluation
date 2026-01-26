@@ -423,10 +423,8 @@ async def generate_comparison_report(job_ids: Dict[str, str]):
     comp_dir.mkdir(parents=True, exist_ok=True)
     
     download_gen = AsyncOutputGenerator(comp_dir)
-    excel_path = await download_gen.generate_comparison_excel(combined)
+    await download_gen.generate_comparison_excel(combined)
 
-    print("excel_path", excel_path)
-    
     return {
         "status": "success",
         "comparison_id": comp_id,
