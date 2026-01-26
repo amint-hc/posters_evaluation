@@ -8,6 +8,7 @@ Usage:
 import sys
 import tkinter as tk
 from pathlib import Path
+from typing import Dict
 
 # Add mock directory to path
 sys.path.insert(0, str(Path(__file__).parent / "mock"))
@@ -177,9 +178,16 @@ def mock_download_excel(self, job_id: str, save_path: str):
         ws.column_dimensions['F'].width = 15
         
         # Save file
-        wb.save(save_path)
-        print(f"[MOCK] Excel file saved to {save_path}")
-        return True
+        try:
+            wb.save(save_path)
+            print(f"[MOCK] Excel file saved to {save_path}")
+            return True
+        except PermissionError:
+            print(f"[MOCK] Permission denied: Could not save to {save_path}. Is the file open in another program?")
+            # We can't use messagebox here directly because we are in a thread usually, 
+            # but in this mock it might be called differently. 
+            # Actually, the original code returns False which the GUI then handles.
+            return False
     except ImportError:
         # Fallback: create CSV-like output
         try:
@@ -196,6 +204,19 @@ def mock_download_excel(self, job_id: str, save_path: str):
         except Exception as e:
             print(f"[MOCK] Error saving file: {e}")
             return False
+
+
+def mock_download_comparison_excel(self, job_ids: Dict[str, str], save_path: str) -> bool:
+    """Mock comparison Excel download"""
+    print(f"[MOCK] Generating comparison Excel for {len(job_ids)} jobs")
+    
+    # In mock mode, we can just use the download_excel mock for any of the job IDs
+    # since mock results are consistent across approaches
+    if not job_ids:
+        return False
+        
+    first_job_id = list(job_ids.values())[0]
+    return mock_download_excel(self, first_job_id, save_path)
 
 
 def mock_start_server(api_key: str = None):
@@ -227,6 +248,7 @@ def setup_mocks():
     backend.EvaluationClient.poll_job_status = mock_poll_job_status
     backend.EvaluationClient.get_results = mock_get_results
     backend.EvaluationClient.download_excel = mock_download_excel
+    backend.EvaluationClient.download_comparison_excel = mock_download_comparison_excel
     
     backend.ServerManager.start_server = mock_start_server
     backend.ServerManager.is_running = lambda self: mock_is_running()
